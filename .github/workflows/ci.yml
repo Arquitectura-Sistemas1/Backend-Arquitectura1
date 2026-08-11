@@ -1,0 +1,23 @@
+name: CI Backend
+
+on:
+  push:
+    branches: [ "develop", "main", "Develop" ]
+  pull_request:
+    branches: [ "develop", "main", "Develop" ]
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validar archivos obligatorios
+        run: |
+          test -f Dockerfile || (echo "ERROR: Falta Dockerfile" && exit 1)
+          test -f .env.example || (echo "ERROR: Falta .env.example" && exit 1)
+          test -f README.md || (echo "ERROR: Falta README.md" && exit 1)
+
+      - name: Validar compilacion de Dockerfile Backend
+        run: docker build -t backend-app-test .
