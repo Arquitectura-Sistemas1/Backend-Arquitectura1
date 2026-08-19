@@ -1,4 +1,4 @@
-name: CI Backend
+name: CI/CD Pipeline - Backend
 
 on:
   push:
@@ -7,11 +7,13 @@ on:
     branches: [ "develop", "main", "Develop" ]
 
 jobs:
+  # ESTO DE LA  INTEGRACIÓN CONTINUA (CI) 
   build-and-validate:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Descargar código
+        uses: actions/checkout@v4
 
       - name: Validar archivos obligatorios
         run: |
@@ -21,3 +23,60 @@ jobs:
 
       - name: Validar compilacion de Dockerfile Backend
         run: docker build -t backend-app-test .
+
+  # ESTO ES DE  DESPLIEGUE CONTINUO: DESARROLLO (Ubuntu Server / Tailscale) SUPONGO
+  deploy-dev:
+    name: Despliegue a Entorno de Desarrollo
+    needs: build-and-validate
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/Develop')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Conectar a la VPN de Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Desplegar en Ubuntu Server vía SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DEV_SERVER_HOST }}
+          username: ${{ secrets.DEV_SERVER_USER }}
+          key: ${{ secrets.DEV_SERVER_SSH_KEY }}
+          script: |
+            cd /ruta/de/tu/proyecto/backend
+            git pull origin Develop
+            docker build -t backend-dev .
+            docker stop backend-dev-container || true
+            docker rm backend-dev-container || true
+            docker run -d --name backend-dev-container -p 8080:8080 backend-dev
+
+  # ESTOOO ES DEL DESPLIEGUE CONTINUO: PRODUCCIÓN (Oracle Cloud) 
+  deploy-prod:
+    name: Despliegue a Producción (OCI)
+    needs: build-and-validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Desplegar en Oracle Cloud vía SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PROD_SERVER_HOST }}
+          username: ${{ secrets.PROD_SERVER_USER }}
+          key: ${{ secrets.PROD_SERVER_SSH_KEY }}
+          script: |
+            cd /ruta/de/tu/proyecto/backend
+            git pull origin main
+            docker build -t backend-prod .
+            docker stop backend-prod-container || true
+            docker rm backend-prod-container || true
+            docker run -d --name backend-prod-container -p 80:8080 backend-prod
