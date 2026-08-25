@@ -1,7 +1,7 @@
-from typing import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
-
+from typing import Any
+from sqlalchemy import text
 from app.config import settings
 
 
@@ -19,12 +19,12 @@ SessionLocal = sessionmaker(
 )
 
 
-def get_db() -> Generator[Session, None, None]:
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def ejecutar_sp(db: Session, nombre_procedimiento: str, **parametros: Any):
+
+    lista_parametros = ", ".join(f"@{key} = :{key}" for key in parametros)
+    sql = text(f"EXEC dbo.{nombre_procedimiento} {lista_parametros}")
+    resultado = db.execute(sql, parametros)
+    return resultado.mappings().all()
 
 
 if __name__ == "__main__":
@@ -36,3 +36,4 @@ if __name__ == "__main__":
             )
     except Exception as e:
         print(f"Error al intentar conectar: {e}")
+
