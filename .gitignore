@@ -3,3 +3,6 @@
 .fastapicloud/
 uv.lock
 entorno/
+__pycache__/
+*.py[cod]
+credenciales.txt
