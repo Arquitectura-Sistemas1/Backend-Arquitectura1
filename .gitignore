@@ -1,2 +1,4 @@
 entorno/
 pruebasdb/.env
+.fastapicloud/
+uv.lock
