@@ -4,7 +4,7 @@ from app.api.router import router as usuarios_router
 
 app = FastAPI()
 
-# Registras el router en la aplicación
+#Registramoss el router en la aplicación
 app.include_router(usuarios_router)
 
 @app.get("/")
