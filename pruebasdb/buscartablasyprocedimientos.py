@@ -1,5 +1,5 @@
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from sqlalchemy import create_engine, MetaData, inspect, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import declarative_base, sessionmaker
@@ -7,8 +7,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 NombreDb = input("Ingrese el nombre de la base de datos a la que desea conectarse: ")
 
 # Carga las variables de entorno (.env)
-load_dotenv() 
-
+load_dotenv(find_dotenv())
 # 1. Leemos la URL base del servidor
 DATABASE_URL_BASE = os.getenv("DATABASE_URL_BASE") or os.getenv("DATABASE_URL")
 

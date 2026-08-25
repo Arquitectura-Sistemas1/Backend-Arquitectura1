@@ -1,10 +1,9 @@
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 
-load_dotenv() 
-
+load_dotenv(find_dotenv())
 DATABASE_URL_BASE = os.getenv("DATABASE_URL_BASE") or os.getenv("DATABASE_URL")
 
 url_obj = make_url(DATABASE_URL_BASE)

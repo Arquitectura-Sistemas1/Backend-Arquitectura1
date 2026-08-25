@@ -1,5 +1,5 @@
-entorno/
-pruebasdb/.env
+.venv/
+.env
 .fastapicloud/
 uv.lock
 entorno/
