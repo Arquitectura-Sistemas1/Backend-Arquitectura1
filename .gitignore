@@ -7,3 +7,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 credenciales.txt
+**/__pycache__/
+__pycache__/
+*.py[cod]
