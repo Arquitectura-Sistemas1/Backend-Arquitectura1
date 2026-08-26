@@ -11,3 +11,4 @@ credenciales.txt
 __pycache__/
 pruebasdb/ProcedimientoaAlmacenados.sql
 pruebasdb/11_RegistroVerificacionUsuarios.sql
+.dockerignore
