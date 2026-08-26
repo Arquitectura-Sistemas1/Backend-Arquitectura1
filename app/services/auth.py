@@ -84,7 +84,7 @@ def login_usuario(usuario: str, password: str, db: Session):
                 }
             }
 
-        # 2. Si no existe como usuario, buscar en la tabla de empleados
+        # 2 Si no existe como usuario, buscar en la tabla de empleados
         resultados_empleado = obtener_credencial_empleado(db, login=usuario)
         
         if resultados_empleado:
@@ -104,7 +104,7 @@ def login_usuario(usuario: str, password: str, db: Session):
                 }
             }
 
-        # 3. Si no existe en ninguno
+        # 3 Si no existe en ninguno
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 
             detail="Usuario o correo no encontrado en el sistema."
@@ -132,10 +132,10 @@ def solicitud_usuario(
     max_intentos: int = 5,
 ):
     try:
-        # 1. Generar hash de la contraseña
+        # 1 Generar hash de la contraseña
         hash_password = hasher(password)
 
-        # 2. Ejecutar SP en base de datos
+        # 2 Ejecutar SP en base de datos
         resultado = solicitar_registro(
             db=db,
             nombres=nombres,
@@ -151,14 +151,14 @@ def solicitud_usuario(
             max_intentos=max_intentos,
         )
 
-        # 3. Validar resultado de BD ANTES de enviar correo
+        # 3 Validar resultado de BD ANTES de enviar correo
         if not resultado:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="No se pudo crear la solicitud de registro."
             )
 
-        # 4. Enviar correo solo si la inserción en BD fue exitosa
+        # 4 Enviar correo solo si la inserción en BD fue exitosa
         enviar_correo(nombres, correo, codigo, "registro")
 
         return {
