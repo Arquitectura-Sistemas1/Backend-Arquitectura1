@@ -9,4 +9,5 @@ __pycache__/
 credenciales.txt
 **/__pycache__/
 __pycache__/
-*.py[cod]
+pruebasdb/ProcedimientoaAlmacenados.sql
+pruebasdb/11_RegistroVerificacionUsuarios.sql
