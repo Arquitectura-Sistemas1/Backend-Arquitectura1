@@ -54,11 +54,18 @@ jobs:
           echo "$SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           
-          # Evitar alertas de verificación de huella de host
-          echo -e "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+          # Configurar SSH para que use el túnel integrado de Tailscale (ProxyCommand)
+          cat <<EOF > ~/.ssh/config
+          Host dev-server
+              HostName $DEV_HOST
+              User $DEV_USER
+              IdentityFile ~/.ssh/id_ed25519
+              StrictHostKeyChecking no
+              ProxyCommand tailscale nc %h %p
+          EOF
 
-          # Ejecutar los comandos directamente en el servidor remoto por SSH
-          ssh -i ~/.ssh/id_ed25519 $DEV_USER@$DEV_HOST << 'EOF'
+          # Ejecutar los comandos en el servidor remoto usando el túnel de Tailscale
+          ssh dev-server << 'EOF'
             cd /home/Brxckin/Backend-Arquitectura1
             git pull origin Develop
             docker build -t backend-dev .
