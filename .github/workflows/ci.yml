@@ -7,7 +7,7 @@ on:
     branches: [ "develop", "main", "Develop" ]
 
 jobs:
-  # ESTO DE LA  INTEGRACIÓN CONTINUA (CI) 
+  # ESTO DE LA INTEGRACIÓN CONTINUA (CI) 
   build-and-validate:
     runs-on: ubuntu-latest
 
@@ -24,7 +24,7 @@ jobs:
       - name: Validar compilacion de Dockerfile Backend
         run: docker build -t backend-app-test .
 
-  # ESTO ES DE  DESPLIEGUE CONTINUO: DESARROLLO (Ubuntu Server / Tailscale) SUPONGO
+  # ESTO ES DE DESPLIEGUE CONTINUO: DESARROLLO (Ubuntu Server / Tailscale)
   deploy-dev:
     name: Despliegue a Entorno de Desarrollo
     needs: build-and-validate
@@ -41,22 +41,33 @@ jobs:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
+          version: 1.68.0
 
-      - name: Desplegar en Ubuntu Server vía SSH
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.DEV_SERVER_HOST }}
-          username: ${{ secrets.DEV_SERVER_USER }}
-          key: ${{ secrets.DEV_SERVER_SSH_KEY }}
-          script: |
+      - name: Desplegar en Ubuntu Server vía SSH sobre Tailscale
+        env:
+          SSH_KEY: ${{ secrets.DEV_SERVER_SSH_KEY }}
+          DEV_HOST: ${{ secrets.DEV_SERVER_HOST }}
+          DEV_USER: ${{ secrets.DEV_SERVER_USER }}
+        run: |
+          # Configurar la llave SSH de forma segura en el runner
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          
+          # Evitar alertas de verificación de huella de host
+          echo -e "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+
+          # Ejecutar los comandos directamente en el servidor remoto por SSH
+          ssh -i ~/.ssh/id_ed25519 $DEV_USER@$DEV_HOST << 'EOF'
             cd /home/Brxckin/Backend-Arquitectura1
             git pull origin Develop
             docker build -t backend-dev .
             docker stop backend-dev-container || true
             docker rm backend-dev-container || true
             docker run -d --name backend-dev-container -p 8080:8080 backend-dev
+          EOF
 
-  # ESTOOO ES DEL DESPLIEGUE CONTINUO: PRODUCCIÓN (Oracle Cloud) 
+  # ESTO ES DEL DESPLIEGUE CONTINUO: PRODUCCIÓN (Oracle Cloud) 
   deploy-prod:
     name: Despliegue a Producción (OCI)
     needs: build-and-validate
