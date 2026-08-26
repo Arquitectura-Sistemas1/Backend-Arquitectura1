@@ -65,7 +65,7 @@ def verificar_credencial_usuario(usuario: str, db: Session):
 
 def login_usuario(usuario: str, password: str, db: Session):
     try:
-        # 1. Buscar en la tabla de usuarios
+        # 1 Buscar en la tabla de usuarios
         resultados_usuario = obtener_credencial_usuario(db, login=usuario)
         
         if resultados_usuario:
@@ -84,7 +84,7 @@ def login_usuario(usuario: str, password: str, db: Session):
                 }
             }
 
-        # 2. Si no existe como usuario, buscar en la tabla de empleados
+        # 2 si no existe como usuario, buscar en la tabla de empleados
         resultados_empleado = obtener_credencial_empleado(db, login=usuario)
         
         if resultados_empleado:
@@ -104,7 +104,7 @@ def login_usuario(usuario: str, password: str, db: Session):
                 }
             }
 
-        # 3. Si no existe en ninguno
+        # si no existe en ninguno
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 
             detail="Usuario o correo no encontrado en el sistema."
