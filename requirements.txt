@@ -1,0 +1,10 @@
+python-dotenv==1.2.3
+SQLAlchemy==2.0.52
+pyodbc==5.2.0
+fastapi[standard]
+uvicorn[standard]
+uv
+dotenv
+argon2-cffi
+resend
+cloudinary
