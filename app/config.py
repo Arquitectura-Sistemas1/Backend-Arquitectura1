@@ -1,4 +1,4 @@
-"""Environment-based configuration for the Resend integration."""
+"""Configuración basada en variables de entorno para Resend."""
 
 from dataclasses import dataclass
 import os
