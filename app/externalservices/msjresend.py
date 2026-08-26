@@ -35,16 +35,14 @@ def enviar_correo(nombre_original, correo_destino, code, tipo="registro"):
                 </div>
                 <p style="font-size: 12px; color: #666;">Este es un correo automático generado por el sistema de soporte del proyecto. Por favor no respondas a este mensaje.</p>
                 <hr style="border: 0; border-top: 1px solid #eee;" />
-                <p style="font-size: 14px;">Saludos,<br><strong>Equipo Desarrollador</strong><br>NexusGames</p>
+                <p style="font-size: 14px; line-height: 1.3; margin: 0;">
+                    Saludos,<br>
+                <strong>Equipo Desarrollador.</strong><br>
+                    NexusGames
+                </p>
             </div>
         """,
     }
     resend.Emails.send(params_user)
 
     return True
-
-
-if enviar_correo("Arturo", "20arturomaldonado@gmail.com", "8465", "registro"):
-    print("Se envio el correo a arturo")
-else:
-    print("error")
