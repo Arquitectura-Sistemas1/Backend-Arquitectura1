@@ -6,7 +6,7 @@ from app.core.database import ejecutar_sp, ejecutar_sp_commit
 Aquí está toda la lógica para invocar los procedimientos almacenados que son llamados
 en las funciones de services/auth.py.
 """
-
+#nada mas para forzar push
 def obtener_credencial_empleado(db: Session, login: str):
     return ejecutar_sp(db, "sp_ObtenerCredencialEmpleado", Login=login)
 
