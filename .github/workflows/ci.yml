@@ -49,7 +49,7 @@ jobs:
           username: ${{ secrets.DEV_SERVER_USER }}
           key: ${{ secrets.DEV_SERVER_SSH_KEY }}
           script: |
-            cd /ruta/de/tu/proyecto/backend
+            cd /home/Brxckin/Backend-Arquitectura1
             git pull origin Develop
             docker build -t backend-dev .
             docker stop backend-dev-container || true
