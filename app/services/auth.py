@@ -65,7 +65,7 @@ def verificar_credencial_usuario(usuario: str, db: Session):
 
 def login_usuario(usuario: str, password: str, db: Session):
     try:
-        # 1. Buscar en la tabla de usuarios
+        # 1 Buscar en la tabla de usuarios
         resultados_usuario = obtener_credencial_usuario(db, login=usuario)
         
         if resultados_usuario:
