@@ -6,13 +6,18 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.crud.auth import (
     obtener_credencial_empleado,
     obtener_credencial_usuario,
-    solicitar_registro,
+    obtener_solicitud_registro,
     obtener_verificacion,
-    completar_registro_usuario
+    obtener_validacion_registro
 )
 from app.core.security import hasher, comparar_hash
 from app.externalservices.msjresend import enviar_correo
 
+"""aca recordar que crud.auth.py solo es la funcion que manda a llamar los procedimientos almacenados
+services los convierte en logica de creacion en db y negocio
+endpoints solo llaman a las funciones que hacen toda esta logica
+vamos a usar schemas para no andar referenciando el gran cuerpo de datos a cada rato
+"""
 
 def verificar_credencial_empleado(usuario: str, db: Session):
     try:
@@ -84,7 +89,7 @@ def login_usuario(usuario: str, password: str, db: Session):
                 }
             }
 
-        # 2 si no existe como usuario, buscar en la tabla de empleados
+        # 2 Si no existe como usuario, buscar en la tabla de empleados
         resultados_empleado = obtener_credencial_empleado(db, login=usuario)
         
         if resultados_empleado:
@@ -104,7 +109,7 @@ def login_usuario(usuario: str, password: str, db: Session):
                 }
             }
 
-        # si no existe en ninguno
+        # 3 Si no existe en ninguno
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 
             detail="Usuario o correo no encontrado en el sistema."
@@ -132,11 +137,11 @@ def solicitud_usuario(
     max_intentos: int = 5,
 ):
     try:
-        # 1. Generar hash de la contraseña
+        # 1 Generar hash de la contraseña
         hash_password = hasher(password)
 
-        # 2. Ejecutar SP en base de datos
-        resultado = solicitar_registro(
+        # 2 Ejecutar SP en base de datos
+        resultado = obtener_solicitud_registro(
             db=db,
             nombres=nombres,
             apellidos=apellidos,
@@ -151,14 +156,14 @@ def solicitud_usuario(
             max_intentos=max_intentos,
         )
 
-        # 3. Validar resultado de BD ANTES de enviar correo
+        # 3 Validar resultado de BD ANTES de enviar correo
         if not resultado:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="No se pudo crear la solicitud de registro."
             )
 
-        # 4. Enviar correo solo si la inserción en BD fue exitosa
+        # 4 Enviar correo solo si la inserción en BD fue exitosa
         enviar_correo(nombres, correo, codigo, "registro")
 
         return {
@@ -174,7 +179,7 @@ def solicitud_usuario(
 
 def registrar_usuario_final(solicitud_id: int, db: Session):
     try:
-        resultado = completar_registro_usuario(db, solicitud_id=solicitud_id)
+        resultado = obtener_validacion_registro(db, solicitud_id=solicitud_id)
         if not resultado:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
