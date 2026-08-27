@@ -2,12 +2,18 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Instalar controladores nativos ODBC necesarios para pyodbc
+# Instalar dependencias del sistema y el Microsoft ODBC Driver 17 para SQL Server
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    gnupg2 \
     unixodbc \
     unixodbc-dev \
     gcc \
     g++ \
+    && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
+    && curl -fsSL https://packages.microsoft.com/config/debian/12/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql17 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar e instalar dependencias de Python
@@ -17,7 +23,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar el código fuente
 COPY app ./app
 
-# Cambiar puerto a 8080 para alinearlo con el Workflow
 EXPOSE 8080
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
