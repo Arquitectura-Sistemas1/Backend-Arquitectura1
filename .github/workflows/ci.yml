@@ -69,7 +69,7 @@ jobs:
             git pull origin Develop
             docker build -t backend-dev .
             docker container inspect backend-dev-container >/dev/null 2>&1 && docker stop backend-dev-container && docker rm backend-dev-container || true
-            docker run -d --name backend-dev-container -p 8080:8080 backend-dev
+            docker run -d --name backend-dev-container --env-file .env -p 8080:8080 backend-dev
           EOF
 
   # DESPLIEGUE CONTINUO: PRODUCCIÓN (Oracle Cloud)
@@ -94,4 +94,4 @@ jobs:
             git pull origin main
             docker build -t backend-prod .
             docker container inspect backend-prod-container >/dev/null 2>&1 && docker stop backend-prod-container && docker rm backend-prod-container || true
-            docker run -d --name backend-prod-container -p 80:8080 backend-prod
+            docker run -d --name backend-prod-container --env-file .env -p 80:8080 backend-prod
