@@ -7,7 +7,7 @@ on:
     branches: [ "develop", "main", "Develop" ]
 
 jobs:
-  # ESTO DE LA INTEGRACIÓN CONTINUA (CI) 
+  # ESTO DE LA INTEGRACIÓN CONTINUA (CI) daisdpasnd
   build-and-validate:
     runs-on: ubuntu-latest
 
