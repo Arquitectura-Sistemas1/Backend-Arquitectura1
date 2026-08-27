@@ -6,7 +6,7 @@ from app.services.auth import verificar_credencial_empleado, verificar_credencia
 from app.utils.codesgen import generar_codigo_verificacion
 from datetime import date
 from app.core.limiter import limiter
-
+ # oihdioasdnas
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 @router.post("/credencial-empleado", status_code=status.HTTP_200_OK)
