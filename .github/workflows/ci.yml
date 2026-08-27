@@ -7,7 +7,7 @@ on:
     branches: [ "develop", "main", "Develop" ]
 
 jobs:
-  # ESTO DE LA INTEGRACIÓN CONTINUA (CI) daisdpasnd
+  # ESTO DE LA INTEGRACIÓN CONTINUA (CI) daisdpasnd asoidhapsdh
   build-and-validate:
     runs-on: ubuntu-latest
 
