@@ -7,7 +7,7 @@ on:
     branches: [ "develop", "main", "Develop" ]
 
 jobs:
-  # ESTO DE LA INTEGRACIÓN CONTINUA (CI) daisdpasnd asoidhapsdh
+  # INTEGRACIÓN CONTINUA (CI)
   build-and-validate:
     runs-on: ubuntu-latest
 
@@ -24,7 +24,7 @@ jobs:
       - name: Validar compilacion de Dockerfile Backend
         run: docker build -t backend-app-test .
 
-  # ESTO ES DE DESPLIEGUE CONTINUO: DESARROLLO (Ubuntu Server / Tailscale)
+  # DESPLIEGUE CONTINUO: DESARROLLO (Ubuntu Server / Tailscale)
   deploy-dev:
     name: Despliegue a Entorno de Desarrollo
     needs: build-and-validate
@@ -36,12 +36,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Conectar a la VPN de Tailscale
-        uses: tailscale/github-action@v2
+        uses: tailscale/github-action@v3
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
-          version: 1.68.0
 
       - name: Desplegar en Ubuntu Server vía SSH sobre Tailscale
         env:
@@ -49,12 +48,12 @@ jobs:
           DEV_HOST: ${{ secrets.DEV_SERVER_HOST }}
           DEV_USER: ${{ secrets.DEV_SERVER_USER }}
         run: |
-          # Configurar la llave SSH de forma segura en el runner
+          # 1. Configurar la llave SSH de forma segura en el runner
           mkdir -p ~/.ssh
           echo "$SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           
-          # Configurar SSH para que use el túnel integrado de Tailscale (ProxyCommand)
+          # 2. Configurar SSH con el túnel de Tailscale
           cat <<EOF > ~/.ssh/config
           Host dev-server
               HostName $DEV_HOST
@@ -64,17 +63,16 @@ jobs:
               ProxyCommand tailscale nc %h %p
           EOF
 
-          # Ejecutar los comandos en el servidor remoto usando el túnel de Tailscale
+          # 3. Ejecutar actualización del servidor y despliegue del contenedor
           ssh dev-server << 'EOF'
             cd /home/Brxckin/Backend-Arquitectura1
             git pull origin Develop
             docker build -t backend-dev .
-            docker stop backend-dev-container || true
-            docker rm backend-dev-container || true
+            docker container inspect backend-dev-container >/dev/null 2>&1 && docker stop backend-dev-container && docker rm backend-dev-container || true
             docker run -d --name backend-dev-container -p 8080:8080 backend-dev
           EOF
 
-  # ESTO ES DEL DESPLIEGUE CONTINUO: PRODUCCIÓN (Oracle Cloud)
+  # DESPLIEGUE CONTINUO: PRODUCCIÓN (Oracle Cloud)
   deploy-prod:
     name: Despliegue a Producción (OCI)
     needs: build-and-validate
@@ -86,7 +84,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Desplegar en Oracle Cloud vía SSH
-        uses: appleboy/ssh-action@v1.0.0
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.PROD_SERVER_HOST }}
           username: ${{ secrets.PROD_SERVER_USER }}
@@ -95,6 +93,5 @@ jobs:
             cd /home/Brxckin/Backend-Arquitectura1
             git pull origin main
             docker build -t backend-prod .
-            docker stop backend-prod-container || true
-            docker rm backend-prod-container || true
+            docker container inspect backend-prod-container >/dev/null 2>&1 && docker stop backend-prod-container && docker rm backend-prod-container || true
             docker run -d --name backend-prod-container -p 80:8080 backend-prod
