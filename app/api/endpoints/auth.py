@@ -30,6 +30,7 @@ def login_usuario_endpoint(request: Request, usuario: str, password: str, db: Se
 @router.post("/solicitud-usuario", status_code=status.HTTP_201_CREATED)
 @limiter.limit("3/hour")
 def solicitud_usuario_endpoint(
+    request: Request,
     nombres: str,
     apellidos: str,
     fecha_nacimiento: date,
@@ -56,6 +57,7 @@ def solicitud_usuario_endpoint(
 @router.post("/confirmar-registro", status_code=status.HTTP_201_CREATED)
 @limiter.limit("2/minute")
 def confirmar_registro_endpoint(
+     request: Request,
     usuario: str,
     codigo: str,
     db: Session = Depends(get_db)

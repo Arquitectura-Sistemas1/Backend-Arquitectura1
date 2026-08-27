@@ -5,4 +5,4 @@ from app.api.deps import get_db
  #falta completarla con importacion de las funciones en app.services.inventario
 from datetime import date
 
-router = APIRouter(prefix="/inv", tags=["Inventario"])
+router = APIRouter(prefix="/inv", tags=["Inventario"]) #uohisdhasd
