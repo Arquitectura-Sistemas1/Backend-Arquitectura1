@@ -22,7 +22,7 @@ def obtener_verificacion(db: Session, login: str, codigo: str):
         EsValido=None,             # OUTPUT
         IntentosRestantes=None      # OUTPUT
     )
-def completar_registro_usuario(db: Session, solicitud_id: int):
+def obtener_validacion_registro(db: Session, solicitud_id: int):
     """
     Invoca el SP para migrar la solicitud verificada 
     a las tablas finales Usuario y CredencialUsuario.
@@ -34,7 +34,7 @@ def completar_registro_usuario(db: Session, solicitud_id: int):
         UsuarioID=None  # Parámetro OUTPUT de SQL Server
     )
 
-def solicitar_registro(
+def obtener_solicitud_registro(
     db: Session,
     nombres: str,
     apellidos: str,

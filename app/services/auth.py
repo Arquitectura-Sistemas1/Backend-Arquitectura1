@@ -6,13 +6,18 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.crud.auth import (
     obtener_credencial_empleado,
     obtener_credencial_usuario,
-    solicitar_registro,
+    obtener_solicitud_registro,
     obtener_verificacion,
-    completar_registro_usuario
+    obtener_validacion_registro
 )
 from app.core.security import hasher, comparar_hash
 from app.externalservices.msjresend import enviar_correo
 
+"""aca recordar que crud.auth.py solo es la funcion que manda a llamar los procedimientos almacenados
+services los convierte en logica de creacion en db y negocio
+endpoints solo llaman a las funciones que hacen toda esta logica
+vamos a usar schemas para no andar referenciando el gran cuerpo de datos a cada rato
+"""
 
 def verificar_credencial_empleado(usuario: str, db: Session):
     try:
@@ -136,7 +141,7 @@ def solicitud_usuario(
         hash_password = hasher(password)
 
         # 2 Ejecutar SP en base de datos
-        resultado = solicitar_registro(
+        resultado = obtener_solicitud_registro(
             db=db,
             nombres=nombres,
             apellidos=apellidos,
@@ -174,7 +179,7 @@ def solicitud_usuario(
 
 def registrar_usuario_final(solicitud_id: int, db: Session):
     try:
-        resultado = completar_registro_usuario(db, solicitud_id=solicitud_id)
+        resultado = obtener_validacion_registro(db, solicitud_id=solicitud_id)
         if not resultado:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
