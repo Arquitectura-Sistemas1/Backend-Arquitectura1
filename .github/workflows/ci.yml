@@ -2,9 +2,9 @@ name: CI/CD Pipeline - Oracle Cloud Direct
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: [ "Produccion" ]
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: [ "Produccion" ]
 
 jobs:
   # 1. ETAPA DE INTEGRACIÓN CONTINUA (CI)
