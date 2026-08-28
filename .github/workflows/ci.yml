@@ -48,4 +48,4 @@ jobs:
             git pull origin Produccion
             docker build -t backend-prod .
             docker container inspect backend-prod-container >/dev/null 2>&1 && docker stop backend-prod-container && docker rm backend-prod-container || true
-            docker run -d --name backend-prod-container --env-file .env -p 80:8080 backend-prod
+            docker run -d --name backend-prod-container --env-file .env -p 8080:8080 backend-prod
