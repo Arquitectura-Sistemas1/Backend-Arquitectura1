@@ -1,97 +1,46 @@
-name: CI/CD Pipeline - Backend
+name: CI/CD Pipeline - Oracle Cloud Direct
 
 on:
   push:
-    branches: [ "develop", "main", "Develop" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "develop", "main", "Develop" ]
+    branches: [ "main", "develop" ]
 
 jobs:
-  # INTEGRACIÓN CONTINUA (CI)
-  build-and-validate:
+  # 1. ETAPA DE INTEGRACIÓN CONTINUA (CI)
+  validate:
+    name: Validar Proyecto
     runs-on: ubuntu-latest
 
     steps:
       - name: Descargar código
         uses: actions/checkout@v4
 
-      - name: Validar archivos obligatorios
+      - name: Validar archivos mínimos
         run: |
-          test -f Dockerfile || (echo "ERROR: Falta Dockerfile" && exit 1)
-          test -f .env.example || (echo "ERROR: Falta .env.example" && exit 1)
           test -f README.md || (echo "ERROR: Falta README.md" && exit 1)
 
-      - name: Validar compilacion de Dockerfile Backend
-        run: docker build -t backend-app-test .
-
-  # DESPLIEGUE CONTINUO: DESARROLLO (Ubuntu Server / Tailscale)
-  deploy-dev:
-    name: Despliegue a Entorno de Desarrollo
-    needs: build-and-validate
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/Develop')
+  # 2. ETAPA DE DESPLIEGUE CONTINUO (CD) - ORACLE CLOUD
+  deploy-oracle:
+    name: Despliegue en Oracle Cloud
+    needs: validate
+    # Solo se ejecuta en PUSH (no en Pull Requests)
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
       - name: Descargar código
         uses: actions/checkout@v4
 
-      - name: Conectar a la VPN de Tailscale
-        uses: tailscale/github-action@v3
-        with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          tags: tag:ci
-
-      - name: Desplegar en Ubuntu Server vía SSH sobre Tailscale
-        env:
-          SSH_KEY: ${{ secrets.DEV_SERVER_SSH_KEY }}
-          DEV_HOST: ${{ secrets.DEV_SERVER_HOST }}
-          DEV_USER: ${{ secrets.DEV_SERVER_USER }}
-        run: |
-          # 1. Configurar la llave SSH de forma segura en el runner
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          
-          # 2. Configurar SSH con el túnel de Tailscale
-          cat <<EOF > ~/.ssh/config
-          Host dev-server
-              HostName $DEV_HOST
-              User $DEV_USER
-              IdentityFile ~/.ssh/id_ed25519
-              StrictHostKeyChecking no
-              ProxyCommand tailscale nc %h %p
-          EOF
-
-          # 3. Ejecutar actualización del servidor y despliegue del contenedor
-          ssh dev-server << 'EOF'
-            cd /home/Brxckin/Backend-Arquitectura1
-            git pull origin Develop
-            docker build -t backend-dev .
-            docker container inspect backend-dev-container >/dev/null 2>&1 && docker stop backend-dev-container && docker rm backend-dev-container || true
-            docker run -d --name backend-dev-container --env-file .env -p 8080:8080 backend-dev
-          EOF
-
-  # DESPLIEGUE CONTINUO: PRODUCCIÓN (Oracle Cloud)
-  deploy-prod:
-    name: Despliegue a Producción (OCI)
-    needs: build-and-validate
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Descargar código
-        uses: actions/checkout@v4
-
-      - name: Desplegar en Oracle Cloud vía SSH
+      - name: Desplegar vía SSH en Oracle Cloud
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.PROD_SERVER_HOST }}
-          username: ${{ secrets.PROD_SERVER_USER }}
-          key: ${{ secrets.PROD_SERVER_SSH_KEY }}
+          host: ${{ secrets.DEV_SERVER_HOST }}
+          username: ${{ secrets.DEV_SERVER_USER }}
+          key: ${{ secrets.DEV_SERVER_ORACLE_SSH_KEY }}
+          port: ${{ secrets.DEV_SERVER_PORT || 22 }}
           script: |
-            cd /home/Brxckin/Backend-Arquitectura1
-            git pull origin main
-            docker build -t backend-prod .
-            docker container inspect backend-prod-container >/dev/null 2>&1 && docker stop backend-prod-container && docker rm backend-prod-container || true
-            docker run -d --name backend-prod-container --env-file .env -p 80:8080 backend-prod
+            cd /ruta/de/tu/proyecto
+            git pull origin ${{ github.ref_name }}
+            docker compose down
+            docker compose up -d --build
