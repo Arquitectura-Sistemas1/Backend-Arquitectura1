@@ -40,7 +40,7 @@ jobs:
           key: ${{ secrets.DEV_SERVER_ORACLE_SSH_KEY }}
           port: ${{ secrets.DEV_SERVER_PORT || 22 }}
           script: |
-            cd /home/saul/actions-runner/Backend-Arquitectura1
+            cd /home/saul/Backend-Arquitectura1
             git pull origin ${{ github.ref_name }}
             docker compose down
             docker compose up -d --build
