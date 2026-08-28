@@ -24,7 +24,7 @@ jobs:
       - name: Validar compilacion de Dockerfile Backend
         run: docker build -t backend-prod-test .
 
-  # 2. ETAPA DE DESPLIEGUE CONTINUO (CD) - PRODUCCIÓN (Oracle Cloud)
+  # 2. ETAPA DE DESPLIEGUE CONTINUO (CD) - PRODUCCIÓN (Oracle Cloud)iguohljbk
   deploy-prod:
     name: Despliegue a Producción (OCI)
     needs: build-and-validate
