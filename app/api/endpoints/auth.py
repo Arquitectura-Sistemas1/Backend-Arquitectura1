@@ -2,9 +2,7 @@
 from fastapi import APIRouter, Depends, status, Request  # <-- 1. Importa Request
 from app.core.database import Session
 from app.api.deps import get_db
-from app.services.auth import login_usuario, solicitud_usuario, verificar_y_completar_registro, registrar_usuario_final
-from app.utils.codesgen import generar_codigo_verificacion
-from datetime import date
+from app.services.auth import login_usuario, solicitud_usuario, verificar_y_completar_registro
 from app.core.limiter import limiter
 from app.schemas.auth import (
     LoginRes, LoginReq, SolicitudUsuarioReq, SolicitudUsuarioRes, ConfirmaRegistroReq,
