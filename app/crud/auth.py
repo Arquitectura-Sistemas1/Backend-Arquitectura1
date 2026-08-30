@@ -17,10 +17,13 @@ def obtener_verificacion(db: Session, login: str, codigo: str):
         EsValido=None,             # OUTPUT
         IntentosRestantes=None      # OUTPUT
     )
+
+
 def obtener_validacion_registro(db: Session, solicitud_id: int):
     """
     Invoca el SP para migrar la solicitud verificada 
-    a las tablas finales Usuario y CredencialUsuario.
+    a las tablas finales Usuario y CredencialUsuario
+    este va junto al anterior para migrar
     """
     return ejecutar_sp_commit(
         db,
@@ -29,34 +32,3 @@ def obtener_validacion_registro(db: Session, solicitud_id: int):
         UsuarioID=None  # Parámetro OUTPUT de SQL Server
     )
 
-def obtener_solicitud_registro(
-    db: Session,
-    nombres: str,
-    apellidos: str,
-    fecha_nacimiento: date,
-    correo: str,
-    pais_id: int,
-    usuario: str,
-    hash_contrasena: str,
-    codigo: str,
-    telefono: str | None = None,
-    minutos_validez: int = 10,
-    max_intentos: int = 5,
-):
-    return ejecutar_sp_commit(
-        db,
-        "sp_CrearSolicitudRegistro",
-        Nombres=nombres,
-        Apellidos=apellidos,
-        FechaNacimiento=fecha_nacimiento,
-        Telefono=telefono,
-        Correo=correo,
-        PaisID=pais_id,
-        Usuario=usuario,
-        HashContrasena=hash_contrasena,
-        Codigo=codigo,
-        MinutosValidez=minutos_validez,
-        MaxIntentos=max_intentos,
-        SolicitudRegistroID=None,  # Parametro OUTPUT en SQL Server
-        CodigoRegistroID=None,     # Parametro OUTPUT en SQL Server
-    )

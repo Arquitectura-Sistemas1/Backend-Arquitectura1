@@ -2,22 +2,15 @@
 from fastapi import APIRouter, Depends, status, Request  # <-- 1. Importa Request
 from app.core.database import Session
 from app.api.deps import get_db
-from app.services.auth import verificar_credencial_empleado, verificar_credencial_usuario, login_usuario, solicitud_usuario, verificar_registro, registrar_usuario_final
+from app.services.auth import login_usuario, solicitud_usuario, verificar_registro, registrar_usuario_final
 from app.utils.codesgen import generar_codigo_verificacion
 from datetime import date
 from app.core.limiter import limiter
-from app.schemas.auth import LoginRes, LoginReq
+from app.schemas.auth import LoginRes, LoginReq, SolicitudUsuarioReq, SolicitudUsuarioRes
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
-@router.post("/credencial-empleado", status_code=status.HTTP_200_OK)
-def verificar_credencial_empleado_endpoint(usuario: str, db: Session = Depends(get_db)):
-    return verificar_credencial_empleado(usuario, db)
 
-
-@router.post("/credencial-usuario", status_code=status.HTTP_200_OK)
-def verificar_credencial_usuario_endpoint(usuario: str, db: Session = Depends(get_db)):
-    return verificar_credencial_usuario(usuario, db)
 
 
 # aplicar el limitador al login y agregar 'request: Request'
@@ -28,32 +21,11 @@ def login_usuario_endpoint(request: Request, payload: LoginReq, db: Session = De
     return login_usuario(payload, db)
 
 
-@router.post("/solicitud-usuario", status_code=status.HTTP_201_CREATED)
+@router.post("/solicitud-usuario", status_code=status.HTTP_201_CREATED, response_model=SolicitudUsuarioRes)
 @limiter.limit("3/hour")
-def solicitud_usuario_endpoint(
-    request: Request,
-    nombres: str,
-    apellidos: str,
-    fecha_nacimiento: date,
-    correo: str,
-    pais_id: int,
-    usuario: str,
-    password: str,
-    telefono: str | None = None,
-    db: Session = Depends(get_db)
-):
-    return solicitud_usuario(
-        db=db,
-        nombres=nombres,
-        apellidos=apellidos,
-        fecha_nacimiento=fecha_nacimiento,
-        correo=correo,
-        pais_id=pais_id,
-        usuario=usuario,
-        password=password,
-        codigo=generar_codigo_verificacion(),
-        telefono=telefono
-    )
+def solicitud_usuario_endpoint(request: Request, datos : SolicitudUsuarioReq, db: Session = Depends(get_db)):
+    return solicitud_usuario(db, datos)
+
 
 @router.post("/confirmar-registro", status_code=status.HTTP_201_CREATED)
 @limiter.limit("2/minute")
