@@ -5,7 +5,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.core.database import ejecutar_sp, ejecutar_sp_commit
 
 from app.crud.auth import (
-    obtener_solicitud_registro,
     obtener_verificacion,
     obtener_validacion_registro
 )
