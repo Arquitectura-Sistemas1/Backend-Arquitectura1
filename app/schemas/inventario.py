@@ -1,17 +1,45 @@
-from datetime import date 
-from pydantic import BaseModel, Field
+from fastapi import Form
+from pydantic import BaseModel
+from typing import Optional
+from datetime import date
 
-class VideojuegoCreate(BaseModel):  # Sugerencia: nombrar como 'Create' o 'Request' indica su propósito de entrada
+class VideojuegoCreate(BaseModel):
     clasificacion_id: int
-    titulo: str = Field(..., max_length=200) # Coincide con NVARCHAR(200)
-    descripcion: str | None = None
-    fecha_lanzamiento: date | None = None
-    numero_jugadores: int = Field(default=1, ge=1, le=100) # Mínimo 1 jugador, evita overflows
-    edicion: str | None = Field(default=None, max_length=100)
-    idioma: str | None = Field(default=None, max_length=80)
-    genero_id: int | None = None
-    desarrolladora_id: int | None = None
+    titulo: str
+    descripcion: Optional[str] = None
+    fecha_lanzamiento: date
+    numero_jugadores: int
+    edicion: str
+    idioma: str
+    genero_id: int
+    desarrolladora_id: int
 
+    # Este classmethod mapea cada campo a Form(...) automáticamente
+    @classmethod
+    def as_form(
+        cls,
+        clasificacion_id: int = Form(...),
+        titulo: str = Form(...),
+        descripcion: Optional[str] = Form(None),
+        fecha_lanzamiento: date = Form(...),
+        numero_jugadores: int = Form(...),
+        edicion: str = Form(...),
+        idioma: str = Form(...),
+        genero_id: int = Form(...),
+        desarrolladora_id: int = Form(...)
+    ):
+        return cls(
+            clasificacion_id=clasificacion_id,
+            titulo=titulo,
+            descripcion=descripcion,
+            fecha_lanzamiento=fecha_lanzamiento,
+            numero_jugadores=numero_jugadores,
+            edicion=edicion,
+            idioma=idioma,
+            genero_id=genero_id,
+            desarrolladora_id=desarrolladora_id
+        )
+    
 class VideojuegoResponse(BaseModel):
     videojuego_id: int
     portada_id: int | None = None

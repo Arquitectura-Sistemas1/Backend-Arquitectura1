@@ -2,7 +2,8 @@ from datetime import date
 from sqlalchemy.orm import Session
 from app.core.database import ejecutar_sp, ejecutar_sp_commit
 from app.schemas.inventario import VideojuegoCreate, VideojuegoResponse
-
+from app.externalservices.nubecloudi import subir_imagen
+from fastapi import UploadFile
 "vuelvo a indicar que esta es logica solo para llamar procedimientos almacenados"
 """
     @ClasificacionID      INT,
@@ -19,8 +20,10 @@ from app.schemas.inventario import VideojuegoCreate, VideojuegoResponse
     @PortadaID            BIGINT OUTPUT
 
 """
-def crear_videojuego(db: Session, datos: VideojuegoCreate):
-
+def crear_videojuego(db: Session,  file: UploadFile | None, datos: VideojuegoCreate):
+    url_foto = None
+    if file and file.filename:
+        url_foto = subir_imagen(file)
     resultado = ejecutar_sp_commit(
         db, 
         "sp_CrearVideojuego", 
@@ -33,7 +36,7 @@ def crear_videojuego(db: Session, datos: VideojuegoCreate):
         Idioma=datos.idioma,
         GeneroID=datos.genero_id,
         DesarrolladoraID=datos.desarrolladora_id,
-        PortadaURL= None, #de momento se queda none porque no tengo aun peusto el tema de cloudinary
+        PortadaURL= url_foto, #de momento se queda none porque no tengo aun peusto el tema de cloudinary
         VideojuegoID=None,
         PortadaID=None,
         )

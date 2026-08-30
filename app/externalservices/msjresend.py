@@ -2,12 +2,13 @@ import os
 import resend
 from app.config import settings
 
-def enviar_correo(nombre_original, correo_destino, code, tipo="registro"):
-    resend.api_key = settings.RESEND_KEY
-    if not resend.api_key:
-        raise ValueError("RESEND_KEY no está configurada.")
 
-    
+resend.api_key = settings.RESEND_KEY
+if not resend.api_key:
+    raise ValueError("RESEND_KEY no está configurada.")
+
+
+def enviar_correo(nombre_original, correo_destino, code, tipo="registro"):
     if tipo == "recuperacion":
         subject = f"Restablecer contraseña: {code} - NexusGames"
         motivo = "restablecer la contraseña de tu cuenta en la plataforma"
