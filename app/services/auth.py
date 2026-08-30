@@ -68,7 +68,7 @@ def verificar_credencial_usuario(usuario: str, db: Session):
         )
 
 
-def login_usuario(datos: LoginRes, db: Session):
+def login_usuario(datos: LoginReq, db: Session):
     try:
         # 1 Buscar en la tabla de usuarios
         resultados_usuario = ejecutar_sp(db, "sp_ObtenerCredencialUsuario", Login=datos.usuario)

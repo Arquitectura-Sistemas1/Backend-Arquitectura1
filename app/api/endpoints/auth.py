@@ -25,7 +25,7 @@ def verificar_credencial_usuario_endpoint(usuario: str, db: Session = Depends(ge
 @limiter.limit("3/minute")  # este lmita a 3 intentos por minuto por IP
 def login_usuario_endpoint(request: Request, payload: LoginReq, db: Session = Depends(get_db)):
     print(f"Intento de login desde la IP: {request.client.host}")
-    return login_usuario(payload.usuario, payload.psswd, db)
+    return login_usuario(payload, db)
 
 
 @router.post("/solicitud-usuario", status_code=status.HTTP_201_CREATED)
