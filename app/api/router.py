@@ -7,4 +7,4 @@ router = APIRouter()
 
 
 router.include_router(auth_router)
-#router.include_router(inv_router)
+router.include_router(inv_router)
