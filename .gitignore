@@ -12,3 +12,4 @@ __pycache__/
 pruebasdb/ProcedimientoaAlmacenados.sql
 pruebasdb/11_RegistroVerificacionUsuarios.sql
 .dockerignore
+pruebasdb/12_CatalogoVideojuegos.sql
