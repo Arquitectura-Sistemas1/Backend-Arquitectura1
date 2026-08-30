@@ -7,11 +7,6 @@ Aquí está toda la lógica para invocar los procedimientos almacenados que son 
 en las funciones de services/auth.py.
 """
 
-def obtener_credencial_empleado(db: Session, login: str):
-    return ejecutar_sp(db, "sp_ObtenerCredencialEmpleado", Login=login)
-
-def obtener_credencial_usuario(db: Session, login: str):
-    return ejecutar_sp(db, "sp_ObtenerCredencialUsuario", Login=login)
 def obtener_verificacion(db: Session, login: str, codigo: str):
     return ejecutar_sp_commit(
         db,
