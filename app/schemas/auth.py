@@ -12,6 +12,6 @@ class UsuarioInfo(BaseModel):
 
 class LoginRes(BaseModel):
     message: str = "Inicio de Sesion Exitoso"
-    access_token = str
+    access_token : str
     token_type: str = "bearer"
     usuario : UsuarioInfo
