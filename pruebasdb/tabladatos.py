@@ -36,14 +36,14 @@ if __name__ == "__main__":
                 print(f"Total de registros: {total_registros}")
                 
                 if total_registros > 0:
-                    query_datos = text(f"SELECT TOP 5 * FROM [{tabla}]")
+                    query_datos = text(f"SELECT TOP 10 * FROM [{tabla}]")
                     resultado = connection.execute(query_datos)
                     
                     columnas = resultado.keys()
                     filas = resultado.fetchall()
                     
                     header = " | ".join(columnas)
-                    print("\nPrimeros registros (hasta 5):")
+                    print("\nPrimeros registros (hasta 10):")
                     print(header)
                     print("-" * len(header))
                     

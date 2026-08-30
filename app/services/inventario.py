@@ -37,7 +37,9 @@ def crear_videojuego(db: Session, datos: VideojuegoCreate):
         VideojuegoID=None,
         PortadaID=None,
         )
+    res = resultado[0]
+
     return {
-        "videojuego_id": resultado.get("VideojuegoID"),
-        "portada_id": resultado.get("PortadaID")
-    }
+                "videojuego_id": res["VideojuegoID"],
+                "portada_id": res["PortadaID"]
+            }
