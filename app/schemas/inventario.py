@@ -14,7 +14,7 @@ class VideojuegoCreate(BaseModel):  # Sugerencia: nombrar como 'Create' o 'Reque
 
 class VideojuegoResponse(BaseModel):
     videojuego_id: int
-    portada_id: int
+    portada_id: int | None = None
 
 """
 
