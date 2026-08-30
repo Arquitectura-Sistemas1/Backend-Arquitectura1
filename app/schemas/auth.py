@@ -34,3 +34,15 @@ class SolicitudUsuarioData(BaseModel):
 class SolicitudUsuarioRes(BaseModel):
     message: str = "Solicitud de registro creada exitosamente."
     data: SolicitudUsuarioData
+
+class ConfirmaRegistroReq(BaseModel):
+    usuario: str
+    codigo: str
+
+class ConfirmaRegistroData(BaseModel):
+    usuario_id: int
+    solicitud_registro_id: int
+
+class ConfirmaRegistroRes(BaseModel):
+    message: str
+    data: ConfirmaRegistroData

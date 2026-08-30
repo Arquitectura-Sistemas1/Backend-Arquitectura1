@@ -3,15 +3,11 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from app.core.database import ejecutar_sp, ejecutar_sp_commit
-
-from app.crud.auth import (
-    obtener_verificacion,
-    obtener_validacion_registro
-)
 from app.core.security import hasher, comparar_hash
 from app.externalservices.msjresend import enviar_correo
-from app.schemas.auth import LoginReq, LoginRes, UsuarioInfo, SolicitudUsuarioReq
+from app.schemas.auth import LoginReq, SolicitudUsuarioReq, ConfirmaRegistroReq
 from app.utils.codesgen import generar_codigo_verificacion
+
 """aca recordar que crud.auth.py solo es la funcion que manda a llamar los procedimientos almacenados
 services los convierte en logica de creacion en db y negocio
 endpoints solo llaman a las funciones que hacen toda esta logica
@@ -83,7 +79,6 @@ def login_usuario(datos: LoginReq, db: Session):
 
 def solicitud_usuario(db: Session, datos: SolicitudUsuarioReq, minutos_validez: int = 10, max_intentos: int = 5,):
     try:
- 
         hash_password = hasher(datos.password)
         codigo = generar_codigo_verificacion()
         resultado = ejecutar_sp_commit(
@@ -133,35 +128,70 @@ def solicitud_usuario(db: Session, datos: SolicitudUsuarioReq, minutos_validez: 
 
 
 
-def registrar_usuario_final(solicitud_id: int, db: Session):
+def verificar_y_completar_registro(datos: ConfirmaRegistroReq, db: Session):
     try:
-        resultado = obtener_validacion_registro(db, solicitud_id=solicitud_id)
-        if not resultado:
+        # 1. Validar el código de verificación (OTP)
+        res_validacion = ejecutar_sp_commit(
+            db,
+            "sp_ValidarCodigoRegistro",
+            Login=datos.usuario,
+            Codigo=datos.codigo,
+            SolicitudRegistroID=None,  # OUTPUT
+            EsValido=None,             # OUTPUT
+            IntentosRestantes=None      # OUTPUT
+        )
+
+        if not res_validacion:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Usuario o correo no encontrado."
+            )
+
+        validacion = res_validacion[0]
+
+        # 2. Verificar si el código ingresado fue correcto
+        if not validacion.get("EsValido"):
+            intentos = validacion.get("IntentosRestantes", 0)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No se pudo completar el registro. Verifica que la solicitud esté VERIFICADA."
+                detail=f"Código de verificación incorrecto o expirado. Intentos restantes: {intentos}"
             )
+
+        solicitud_id = validacion.get("SolicitudRegistroID")
+        if not solicitud_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No se obtuvo una solicitud válida."
+            )
+
+        # 3. Migrar/Confirmar la cuenta en la base de datos
+        res_confirmacion = ejecutar_sp_commit(
+            db,
+            "sp_ConfirmarRegistroUsuario",
+            SolicitudRegistroID=solicitud_id,
+            UsuarioID=None  # OUTPUT
+        )
+
+        if not res_confirmacion:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No se pudo completar el registro de la cuenta."
+            )
+
+        confirmacion = res_confirmacion[0]
+
         return {
-            "message": "Usuario registrado exitosamente en el sistema.",
-            "data": resultado[0] if isinstance(resultado, list) else resultado
+            "message": "Registro verificado y usuario creado exitosamente.",
+            "data": {
+                "usuario_id": confirmacion["UsuarioID"],
+                "solicitud_registro_id": solicitud_id
+            }
         }
+
+    except HTTPException:
+        raise
     except SQLAlchemyError as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error BD al completar registro: {str(e.__dict__.get('orig', e))}"
+            detail=f"Error BD al verificar el registro: {str(e.__dict__.get('orig', e))}"
         )
-#el de arriba es para meter el reguisro y el de abajo para migrar el usuario a la db
-def verificar_registro (usuario: str, code: str, db: Session):
-    try:
-        resultados = obtener_verificacion(db, login=usuario, codigo=code)
-        if not resultados:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Usuario o correo no encontrado"
-            )
-        return resultados[0]
-    except SQLAlchemyError as e:
-        raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Error BD: {str(e.__dict__.get('orig', e))}"
-                )
