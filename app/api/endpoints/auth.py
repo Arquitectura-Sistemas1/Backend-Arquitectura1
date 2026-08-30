@@ -6,6 +6,7 @@ from app.services.auth import verificar_credencial_empleado, verificar_credencia
 from app.utils.codesgen import generar_codigo_verificacion
 from datetime import date
 from app.core.limiter import limiter
+from app.schemas.auth import LoginRes
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -20,7 +21,7 @@ def verificar_credencial_usuario_endpoint(usuario: str, db: Session = Depends(ge
 
 
 # aplicar el limitador al login y agregar 'request: Request'
-@router.post("/login", status_code=status.HTTP_200_OK)
+@router.post("/login", status_code=status.HTTP_200_OK, response_model=LoginRes)
 @limiter.limit("3/minute")  # este lmita a 3 intentos por minuto por IP
 def login_usuario_endpoint(request: Request, usuario: str, password: str, db: Session = Depends(get_db)):
     print(f"Intento de login desde la IP: {request.client.host}")

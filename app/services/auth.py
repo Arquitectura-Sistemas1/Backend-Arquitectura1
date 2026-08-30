@@ -2,16 +2,16 @@ from datetime import date
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
+from app.core.database import ejecutar_sp, ejecutar_sp_commit
 
 from app.crud.auth import (
-    obtener_credencial_empleado,
-    obtener_credencial_usuario,
     obtener_solicitud_registro,
     obtener_verificacion,
     obtener_validacion_registro
 )
 from app.core.security import hasher, comparar_hash
 from app.externalservices.msjresend import enviar_correo
+from app.schemas.auth import LoginReq, LoginRes, UsuarioInfo
 
 """aca recordar que crud.auth.py solo es la funcion que manda a llamar los procedimientos almacenados
 services los convierte en logica de creacion en db y negocio
@@ -21,7 +21,7 @@ vamos a usar schemas para no andar referenciando el gran cuerpo de datos a cada 
 
 def verificar_credencial_empleado(usuario: str, db: Session):
     try:
-        resultados = obtener_credencial_empleado(db, login=usuario)
+        resultados = ejecutar_sp(db, "sp_ObtenerCredencialUsuario", Login=usuario)
         if not resultados:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, 
@@ -53,7 +53,7 @@ def verificar_registro (usuario: str, code: str, db: Session):
 
 def verificar_credencial_usuario(usuario: str, db: Session):
     try:
-        resultados = obtener_credencial_usuario(db, login=usuario)
+        resultados = ejecutar_sp(db, "sp_ObtenerCredencialEmpleado", Login=usuario)
         if not resultados:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, 
@@ -68,44 +68,49 @@ def verificar_credencial_usuario(usuario: str, db: Session):
         )
 
 
-def login_usuario(usuario: str, password: str, db: Session):
+def login_usuario(datos: LoginRes, db: Session):
     try:
         # 1 Buscar en la tabla de usuarios
-        resultados_usuario = obtener_credencial_usuario(db, login=usuario)
+        resultados_usuario = ejecutar_sp(db, "sp_ObtenerCredencialUsuario", Login=datos.usuario)
         
         if resultados_usuario:
             credencial = resultados_usuario[0]
-            if not comparar_hash(password, credencial['HashContrasena']):
+            if not comparar_hash(datos.psswd, credencial['HashContrasena']):
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED, 
                     detail="Contraseña incorrecta."
                 )
             return {
-                "tipo_cuenta": "usuario",
-                "message": f"Inicio de sesión exitoso, usuario: {credencial['Usuario']}",
-                "data": {
-                    "UsuarioID": credencial["UsuarioID"],
-                    "Correo": credencial["Correo"]
+                "message": "Inicio de sesión exitoso",
+        "access_token": "123",
+        "token_type": "bearer",
+        "usuario": {
+            "usuario_id": credencial["UsuarioID"], # o UsuarioID
+            "usuario": credencial["Usuario"],
+            "correo": credencial["Correo"],
+            "tipo_cuenta": "Usuario"
                 }
             }
 
         # 2 Si no existe como usuario, buscar en la tabla de empleados
-        resultados_empleado = obtener_credencial_empleado(db, login=usuario)
+        resultados_empleado = ejecutar_sp(db, "sp_ObtenerCredencialEmpleado", Login=datos.usuario)
         
         if resultados_empleado:
             credencial = resultados_empleado[0]
-            if not comparar_hash(password, credencial['HashContrasena']):
+            if not comparar_hash(datos.psswd, credencial['HashContrasena']):
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED, 
                     detail="Contraseña incorrecta."
                 )
             return {
-                "tipo_cuenta": "empleado",
-                "message": f"Inicio de sesión exitoso, empleado: {credencial['Usuario']}",
-                "data": {
-                    "EmpleadoID": credencial["EmpleadoID"],
-                    "Correo": credencial["Correo"],
-                    "RolID": credencial["RolID"]
+                "message": "Inicio de sesión exitoso",
+                        "access_token": "123",
+                        "token_type": "bearer",
+                        "usuario": {
+                            "usuario_id": credencial["UsuarioID"], # o UsuarioID
+                            "usuario": credencial["Usuario"],
+                            "correo": credencial["Correo"],
+                            "tipo_cuenta": "Empleado"
                 }
             }
 
