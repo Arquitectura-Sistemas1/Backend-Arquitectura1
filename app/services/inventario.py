@@ -6,6 +6,34 @@ from app.externalservices.nubecloudi import subir_imagen
 from fastapi import UploadFile
 
 
+def listar_videojuegos_catalogo(db: Session):
+    resultado = ejecutar_sp(db, "GetVideoGames", VideojuegoID=None)
+    
+    lista = []
+    for res in resultado:
+        # Convertimos la fila a Mapping/Dict para habilitar el uso seguro de .get()
+        data = dict(res._mapping) if hasattr(res, "_mapping") else dict(res)
+        
+        lista.append({
+            "id": data.get("VideojuegoID") or data.get("id"),
+            "titulo": data.get("Titulo") or data.get("titulo"),
+            "descripcion": data.get("Descripcion") or data.get("descripcion"),
+            "fecha_lanzamiento": data.get("FechaLanzamiento") or data.get("fecha_lanzamiento"),
+            "numero_jugadores": data.get("NumeroJugadores") or data.get("numero_jugadores"),
+            "edicion": data.get("Edicion") or data.get("edicion"),
+            "idioma": data.get("Idioma") or data.get("idioma"),
+            "clasificacion_id": data.get("ClasificacionID"),
+            "clasificacion_nombre": data.get("ClasificacionNombre"),
+            "genero_id": data.get("GeneroID"),
+            "genero_nombre": data.get("GeneroNombre"),
+            "desarrolladora_id": data.get("DesarrolladoraID"),
+            "desarrolladora_nombre": data.get("DesarrolladoraNombre"),
+            "portada_id": data.get("PortadaID"),
+            "portada_url": data.get("PortadaURL"),
+        })
+        
+    return lista
+
 def cargar_videojuegos(db: Session, datos: VideojuegoGet):
     id = datos.id
     resultado = ejecutar_sp(db, "GetVideoGames", VideojuegoID=id)

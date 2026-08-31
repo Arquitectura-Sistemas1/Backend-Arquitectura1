@@ -3,12 +3,22 @@ from fastapi import APIRouter, Depends, status
 from app.core.database import Session
 from app.api.deps import get_db
 from app.core.security import obtener_usuario_actual
-from app.services.inventario import crear_videojuego, cargar_videojuegos
-from app.schemas.inventario import VideojuegoResponse, VideojuegoCreate, VideoGameStrictResponse, VideojuegoGet
+from app.services.inventario import crear_videojuego, cargar_videojuegos, listar_videojuegos_catalogo
+from app.schemas.inventario import (
+    VideojuegoResponse,
+    VideojuegoCreate,
+    VideoGameStrictResponse,
+    VideojuegoGet,
+    VideojuegoCatalogoResponse
+)
 from fastapi import UploadFile, File
 
 
 router = APIRouter(prefix="/inv", tags=["Inventario"]) #uohisdhasd
+
+@router.get("/videojuegos", status_code=status.HTTP_200_OK, response_model=list[VideojuegoCatalogoResponse])
+def listar_videojuegos_catalogo_endpoint(db: Session = Depends(get_db)):
+    return listar_videojuegos_catalogo(db)
 
 @router.post("/crear-videojuego", status_code=status.HTTP_201_CREATED, response_model=VideojuegoResponse)
 def crear_videojuego_endpoint(
