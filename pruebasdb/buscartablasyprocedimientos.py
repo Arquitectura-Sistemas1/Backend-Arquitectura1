@@ -9,7 +9,7 @@ NombreDb = input("Ingrese el nombre de la base de datos a la que desea conectars
 # Carga las variables de entorno (.env)
 load_dotenv(find_dotenv())
 # 1. Leemos la URL base del servidor
-DATABASE_URL_BASE = os.getenv("DATABASE_URL_BASE") or os.getenv("DATABASE_URL")
+DATABASE_URL_BASE = os.getenv("DB_RESPALDO") 
 
 # 2. Le inyectamos la base de datos ingresada por la consola
 url_obj = make_url(DATABASE_URL_BASE)
