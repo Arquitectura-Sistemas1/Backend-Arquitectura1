@@ -3,6 +3,8 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 from datetime import date
 
+
+#estos son para crear los videojuegos
 class VideojuegoCreate(BaseModel):
     clasificacion_id: int
     titulo: str
@@ -14,7 +16,7 @@ class VideojuegoCreate(BaseModel):
     genero_id: int
     desarrolladora_id: int
 
-    # Este classmethod mapea cada campo a Form(...) automáticamente
+#sta cosa opara definir form que permita ingreso de file
     @classmethod
     def as_form(
         cls,
@@ -39,11 +41,14 @@ class VideojuegoCreate(BaseModel):
             genero_id=genero_id,
             desarrolladora_id=desarrolladora_id
         )
-    
+
+#este la respuesta que da el sp de crear videojuego
 class VideojuegoResponse(BaseModel):
     videojuego_id: int
     portada_id: int | None = None
 
+
+#a partir de aca los schemas auziliares y el proncipal de la respuesta del sp para obtener data videojuego
 class ClasificacionSchema(BaseModel):
     id: int
     codigo: str
@@ -84,23 +89,8 @@ class VideoGameStrictResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+#este para el ingreso, es chiquito y solo de 1 parametro pero se usa para darle a todo un schema y que permita json en ingreso
 class VideojuegoGet(BaseModel):
     id : int
 
-    
-"""
 
-    @ClasificacionID      INT,
-    @Titulo               NVARCHAR(200),
-    @Descripcion          NVARCHAR(MAX) = NULL,
-    @FechaLanzamiento     DATE = NULL,
-    @NumeroJugadores      SMALLINT = 1,
-    @Edicion              NVARCHAR(100) = NULL,
-    @Idioma               NVARCHAR(80) = NULL,
-    @GeneroID             INT = NULL,
-    @DesarrolladoraID     INT = NULL,
-    @PortadaURL           NVARCHAR(500) = NULL, se genera en backend, no vienee del frontend nunca
-    @VideojuegoID         BIGINT OUTPUT,
-    @PortadaID            BIGINT OUTPUT
-
-"""

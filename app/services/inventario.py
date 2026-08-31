@@ -5,22 +5,6 @@ from app.schemas.inventario import VideojuegoCreate, VideojuegoGet
 from app.externalservices.nubecloudi import subir_imagen
 from fastapi import UploadFile
 
-"vuelvo a indicar que esta es logica solo para llamar procedimientos almacenados"
-"""
-    @ClasificacionID      INT,
-    @Titulo               NVARCHAR(200),
-    @Descripcion          NVARCHAR(MAX) = NULL,
-    @FechaLanzamiento     DATE = NULL,
-    @NumeroJugadores      SMALLINT = 1,
-    @Edicion              NVARCHAR(100) = NULL,
-    @Idioma               NVARCHAR(80) = NULL,
-    @GeneroID             INT = NULL,
-    @DesarrolladoraID     INT = NULL,
-    @PortadaURL           NVARCHAR(500) = NULL,
-    @VideojuegoID         BIGINT OUTPUT,
-    @PortadaID            BIGINT OUTPUT
-
-"""
 
 def cargar_videojuegos(db: Session, datos: VideojuegoGet):
     id = datos.id

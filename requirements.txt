@@ -10,3 +10,5 @@ resend
 cloudinary
 slowapi
 pymssql
+passlib
+pyjwt

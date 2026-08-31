@@ -3,7 +3,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from app.core.database import ejecutar_sp, ejecutar_sp_commit
-from app.core.security import hasher, comparar_hash
+from app.core.security import hasher, comparar_hash, crear_token_acceso
 from app.externalservices.msjresend import enviar_correo
 from app.schemas.auth import LoginReq, SolicitudUsuarioReq, ConfirmaRegistroReq
 from app.utils.codesgen import generar_codigo_verificacion
@@ -28,17 +28,19 @@ def login_usuario(datos: LoginReq, db: Session):
                     status_code=status.HTTP_401_UNAUTHORIZED, 
                     detail="Contraseña incorrecta."
                 )
+            token = crear_token_acceso(data={
+                "sub": str(credencial["UsuarioID"]),
+                "usuario": credencial["Usuario"],
+                "tipo_cuenta": "Usuario"
+            })
             return {
                 "message": "Inicio de sesión exitoso",
-        "access_token": "123",
-        "token_type": "bearer",
-        "usuario": {
-            "usuario_id": credencial["UsuarioID"], # o UsuarioID
-            "usuario": credencial["Usuario"],
-            "correo": credencial["Correo"],
-            "tipo_cuenta": "Usuario"
+                "usuario": {
+                    "usuario_id": credencial["UsuarioID"], # o UsuarioID
+                    "usuario": credencial["Usuario"],
+                    "tipo_cuenta": "Usuario"
                 }
-            }
+            }, token
 
         # 2 Si no existe como usuario, buscar en la tabla de empleados
         resultados_empleado = ejecutar_sp(db, "sp_ObtenerCredencialEmpleado", Login=datos.usuario)
@@ -50,17 +52,19 @@ def login_usuario(datos: LoginReq, db: Session):
                     status_code=status.HTTP_401_UNAUTHORIZED, 
                     detail="Contraseña incorrecta."
                 )
+            token = crear_token_acceso(data={
+                "sub": str(credencial["UsuarioID"]),
+                "usuario": credencial["Usuario"],
+                "tipo_cuenta": "Empleado"
+            })
             return {
                 "message": "Inicio de sesión exitoso",
-                        "access_token": "123",
-                        "token_type": "bearer",
                         "usuario": {
                             "usuario_id": credencial["UsuarioID"], # o UsuarioID
                             "usuario": credencial["Usuario"],
-                            "correo": credencial["Correo"],
                             "tipo_cuenta": "Empleado"
                 }
-            }
+            }, token
 
         # 3 Si no existe en ninguno
         raise HTTPException(
