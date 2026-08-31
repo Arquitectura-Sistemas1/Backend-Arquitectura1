@@ -12,12 +12,19 @@ from app.schemas.inventario import (
     VideojuegoCatalogoResponse
 )
 from fastapi import UploadFile, File
+from fastapi import FastAPI, Depends, status, Request # <-- Importar Request
+from sqlalchemy.orm import Session
 
 
 router = APIRouter(prefix="/inv", tags=["Inventario"]) #uohisdhasd
 
+
+
 @router.get("/videojuegos", status_code=status.HTTP_200_OK, response_model=list[VideojuegoCatalogoResponse])
-def listar_videojuegos_catalogo_endpoint(db: Session = Depends(get_db)):
+def listar_videojuegos_catalogo_endpoint(
+    request: Request, # <-- Agregar este parámetro obligatorio para slowapi
+    db: Session = Depends(get_db)
+):
     return listar_videojuegos_catalogo(db)
 
 @router.post("/crear-videojuego", status_code=status.HTTP_201_CREATED, response_model=VideojuegoResponse)
