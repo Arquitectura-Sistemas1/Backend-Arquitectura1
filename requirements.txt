@@ -1,0 +1,4 @@
+resend
+fastapi
+uvicorn
+pydantic[email]
