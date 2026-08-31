@@ -2,12 +2,12 @@
 from fastapi import APIRouter, Depends, status, Request, Response  # <-- 1. Importa Request
 from app.core.database import Session
 from app.api.deps import get_db
-from app.services.auth import login_usuario, solicitud_usuario, verificar_y_completar_registro
+from app.services.auth import login_usuario, solicitud_usuario, verificar_y_completar_registro, registrar_empleado
 from app.core.limiter import limiter
-from app.core.security import ACCESS_TOKEN_EXPIRE_MINUTES
+from app.core.security import ACCESS_TOKEN_EXPIRE_MINUTES, obtener_empleado_admin_actual
 from app.schemas.auth import (
     LoginRes, LoginReq, SolicitudUsuarioReq, SolicitudUsuarioRes, ConfirmaRegistroReq,
-    ConfirmaRegistroRes
+    ConfirmaRegistroRes, RegistrarEmpleadoReq, RegistrarEmpleadoRes
 )
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -49,6 +49,15 @@ def logout_usuario(response: Response):
 @limiter.limit("3/hour")
 def solicitud_usuario_endpoint(request: Request, datos : SolicitudUsuarioReq, db: Session = Depends(get_db)):
     return solicitud_usuario(db, datos)
+
+
+@router.post("/registrar-empleado", status_code=status.HTTP_201_CREATED, response_model=RegistrarEmpleadoRes)
+def registrar_empleado_endpoint(
+    datos: RegistrarEmpleadoReq,
+    db: Session = Depends(get_db),
+    empleado_admin: dict = Depends(obtener_empleado_admin_actual)
+):
+    return registrar_empleado(db, datos)
 
 
 @router.post("/confirmar-registro", status_code=status.HTTP_201_CREATED, response_model=ConfirmaRegistroRes)

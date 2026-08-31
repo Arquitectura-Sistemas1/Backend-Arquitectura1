@@ -72,10 +72,10 @@ def decodificar_token(token: str) -> dict:
 
 
 #  extraer el usuario desde la Cookie 
-def obtener_usuario_actual(request: Request) -> str:
+def obtener_payload_actual(request: Request) -> dict:
     """
     lee la cookie access_token
-    valida el JWT y devuelve el ID del usuario
+    valida el JWT y devuelve el payload
     """
     cookie_token = request.cookies.get("access_token")
     
@@ -90,6 +90,15 @@ def obtener_usuario_actual(request: Request) -> str:
     
     # validar el token y obtener payload
     payload = decodificar_token(token)
+    return payload
+
+
+def obtener_usuario_actual(request: Request) -> str:
+    """
+    lee la cookie access_token
+    valida el JWT y devuelve el ID del usuario
+    """
+    payload = obtener_payload_actual(request)
     user_id: Optional[str] = payload.get("sub")
     
     if user_id is None:
@@ -99,3 +108,41 @@ def obtener_usuario_actual(request: Request) -> str:
         )
         
     return user_id
+
+
+def obtener_empleado_admin_actual(request: Request) -> dict:
+    """
+    valida que la cookie pertenezca a un empleado administrador
+    """
+    payload = obtener_payload_actual(request)
+    user_id: Optional[str] = payload.get("sub")
+    tipo_cuenta: Optional[str] = payload.get("tipo_cuenta")
+    rol_id = payload.get("rol_id")
+
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido: falta información de usuario"
+        )
+
+    if tipo_cuenta != "Empleado":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los empleados pueden realizar esta acción."
+        )
+
+    try:
+        rol_id = int(rol_id)
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los empleados administradores pueden realizar esta acción."
+        )
+
+    if rol_id != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los empleados administradores pueden realizar esta acción."
+        )
+
+    return payload

@@ -1,11 +1,12 @@
 from datetime import date
 from fastapi import HTTPException, status
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from app.core.database import ejecutar_sp, ejecutar_sp_commit
 from app.core.security import hasher, comparar_hash, crear_token_acceso
 from app.externalservices.msjresend import enviar_correo
-from app.schemas.auth import LoginReq, SolicitudUsuarioReq, ConfirmaRegistroReq
+from app.schemas.auth import LoginReq, SolicitudUsuarioReq, ConfirmaRegistroReq, RegistrarEmpleadoReq
 from app.utils.codesgen import generar_codigo_verificacion
 
 """aca recordar que crud.auth.py solo es la funcion que manda a llamar los procedimientos almacenados
@@ -52,17 +53,21 @@ def login_usuario(datos: LoginReq, db: Session):
                     status_code=status.HTTP_401_UNAUTHORIZED, 
                     detail="Contraseña incorrecta."
                 )
+            empleado_id = credencial["EmpleadoID"]
+            rol_id = credencial["RolID"]
             token = crear_token_acceso(data={
-                "sub": str(credencial["UsuarioID"]),
+                "sub": str(empleado_id),
                 "usuario": credencial["Usuario"],
-                "tipo_cuenta": "Empleado"
+                "tipo_cuenta": "Empleado",
+                "rol_id": rol_id
             })
             return {
                 "message": "Inicio de sesión exitoso",
                         "usuario": {
-                            "usuario_id": credencial["UsuarioID"], # o UsuarioID
+                            "usuario_id": empleado_id,
                             "usuario": credencial["Usuario"],
-                            "tipo_cuenta": "Empleado"
+                            "tipo_cuenta": "Empleado",
+                            "rol_id": rol_id
                 }
             }, token
 
@@ -127,6 +132,72 @@ def solicitud_usuario(db: Session, datos: SolicitudUsuarioReq, minutos_validez: 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error BD al crear solicitud: {str(e.__dict__.get('orig', e))}"
+        )
+
+
+
+
+def registrar_empleado(db: Session, datos: RegistrarEmpleadoReq):
+    try:
+        hash_password = hasher(datos.password)
+        sql = text("""
+            SET NOCOUNT ON;
+
+            DECLARE @EmpleadoID INT;
+
+            EXEC dbo.sp_RegistrarEmpleado
+                @RolID = :RolID,
+                @CodigoEmpleado = :CodigoEmpleado,
+                @Nombres = :Nombres,
+                @Apellidos = :Apellidos,
+                @CUI = :CUI,
+                @Telefono = :Telefono,
+                @Correo = :Correo,
+                @Usuario = :Usuario,
+                @HashContrasena = :HashContrasena,
+                @EmpleadoID = @EmpleadoID OUTPUT;
+
+            SELECT @EmpleadoID AS EmpleadoID;
+        """)
+        resultado = db.execute(
+            sql,
+            {
+                "RolID": datos.rol_id,
+                "CodigoEmpleado": datos.codigo_empleado,
+                "Nombres": datos.nombres,
+                "Apellidos": datos.apellidos,
+                "CUI": datos.cui,
+                "Telefono": datos.telefono,
+                "Correo": datos.correo,
+                "Usuario": datos.usuario,
+                "HashContrasena": hash_password,
+            }
+        )
+        datos_empleado = [dict(row) for row in resultado.mappings().all()]
+        db.commit()
+
+        if not datos_empleado or datos_empleado[0].get("EmpleadoID") is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No se pudo registrar el empleado."
+            )
+
+        res = datos_empleado[0]
+        return {
+            "message": "Empleado registrado exitosamente.",
+            "data": {
+                "empleado_id": res["EmpleadoID"],
+                "usuario": datos.usuario,
+                "tipo_cuenta": "Empleado",
+                "rol_id": datos.rol_id
+            }
+        }
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error BD al registrar empleado: {str(e.__dict__.get('orig', e))}"
         )
 
 
