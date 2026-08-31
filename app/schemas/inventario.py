@@ -1,5 +1,5 @@
 from fastapi import Form
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 from datetime import date
 
@@ -44,6 +44,50 @@ class VideojuegoResponse(BaseModel):
     videojuego_id: int
     portada_id: int | None = None
 
+class ClasificacionSchema(BaseModel):
+    id: int
+    codigo: str
+    edad_minima: int
+    descripcion: str
+
+
+class GeneroSchema(BaseModel):
+    id: int
+    nombre: str
+    descripcion: str
+
+
+class DesarrolladoraSchema(BaseModel):
+    id: int
+    nombre: str
+    sitio_web: str
+
+
+class PortadaSchema(BaseModel):
+    id: int
+    url: str
+
+
+class VideoGameStrictResponse(BaseModel):
+    id: int
+    titulo: str
+    descripcion: str
+    fecha_lanzamiento: date
+    numero_jugadores: int
+    edicion: str
+    idioma: str
+
+    clasificacion: ClasificacionSchema
+    genero: GeneroSchema
+    desarrolladora: DesarrolladoraSchema
+    portada: PortadaSchema
+
+    model_config = ConfigDict(from_attributes=True)
+
+class VideojuegoGet(BaseModel):
+    id : int
+
+    
 """
 
     @ClasificacionID      INT,
