@@ -6,7 +6,9 @@ class Settings(BaseSettings):
     CLOUDNANE : str
     CLOUDKEY: str
     CLOUDSECRET: str
-
+    KEY_JWT : str
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     model_config = SettingsConfigDict(
         env_file=".env",
