@@ -71,27 +71,3 @@ jobs:
             docker container inspect backend-dev-container >/dev/null 2>&1 && docker stop backend-dev-container && docker rm backend-dev-container || true
             docker run -d --name backend-dev-container --env-file .env -p 8080:8080 backend-dev
           EOF
-
-  # DESPLIEGUE CONTINUO: PRODUCCIÓN (Oracle Cloud)
-  deploy-prod:
-    name: Despliegue a Producción (OCI)
-    needs: build-and-validate
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Descargar código
-        uses: actions/checkout@v4
-
-      - name: Desplegar en Oracle Cloud vía SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.PROD_SERVER_HOST }}
-          username: ${{ secrets.PROD_SERVER_USER }}
-          key: ${{ secrets.PROD_SERVER_SSH_KEY }}
-          script: |
-            cd /home/Brxckin/Backend-Arquitectura1
-            git pull origin main
-            docker build -t backend-prod .
-            docker container inspect backend-prod-container >/dev/null 2>&1 && docker stop backend-prod-container && docker rm backend-prod-container || true
-            docker run -d --name backend-prod-container --env-file .env -p 80:8080 backend-prod
