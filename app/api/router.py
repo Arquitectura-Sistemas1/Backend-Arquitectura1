@@ -8,3 +8,13 @@ router = APIRouter()
 
 router.include_router(auth_router)
 router.include_router(inv_router)
+
+@router.get("/paises", tags=["Catálogos"])
+def obtener_paises():
+    return [
+        {"id": 1, "nombre": "Guatemala"},
+        {"id": 2, "nombre": "México"},
+        {"id": 3, "nombre": "Estados Unidos"},
+        {"id": 4, "nombre": "Canadá"},
+        {"id": 5, "nombre": "España"},
+    ]
