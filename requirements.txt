@@ -9,3 +9,6 @@ argon2-cffi
 resend
 cloudinary
 slowapi
+pymssql
+passlib
+pyjwt
