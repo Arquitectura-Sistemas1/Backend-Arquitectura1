@@ -12,9 +12,15 @@ from app.schemas.auth import (
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
+#post (insercion), get (obtener informacion ), put (actualizar) delete (eliminar)
+
+
+#solicitar-reseteo-contrasena
+
 
 
 # aplicar el limitador al login y agregar 'request: Request'
+#general
 @router.post("/login", status_code=status.HTTP_200_OK, response_model=LoginRes)
 @limiter.limit("3/minute")  # este lmita a 3 intentos por minuto por IP
 def login_usuario_endpoint(
@@ -35,6 +41,7 @@ def login_usuario_endpoint(
     )
     return resultado
 
+#es general
 @router.post("/logout", status_code=status.HTTP_200_OK)
 def logout_usuario(response: Response):
     response.delete_cookie(
@@ -50,7 +57,7 @@ def logout_usuario(response: Response):
 def solicitud_usuario_endpoint(request: Request, datos : SolicitudUsuarioReq, db: Session = Depends(get_db)):
     return solicitud_usuario(db, datos)
 
-
+#corresponde a empleados, no a clientes
 @router.post("/registrar-empleado", status_code=status.HTTP_201_CREATED, response_model=RegistrarEmpleadoRes)
 def registrar_empleado_endpoint(
     datos: RegistrarEmpleadoReq,
@@ -59,7 +66,7 @@ def registrar_empleado_endpoint(
 ):
     return registrar_empleado(db, datos)
 
-
+#corresponde solo a clientes
 @router.post("/confirmar-registro", status_code=status.HTTP_201_CREATED, response_model=ConfirmaRegistroRes)
 @limiter.limit("2/minute")
 def confirmar_registro_endpoint(request: Request, datos: ConfirmaRegistroReq, db: Session = Depends(get_db)):

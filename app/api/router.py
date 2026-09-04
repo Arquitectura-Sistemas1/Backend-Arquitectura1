@@ -9,6 +9,11 @@ router = APIRouter()
 router.include_router(auth_router)
 router.include_router(inv_router)
 
+
+#este se tiene que mover a otra parte, peude ser la capa informacion o la capa que trae
+#todos los datos como las plataormas, paises y datos auxiliaeres
+
+
 @router.get("/paises", tags=["Catálogos"])
 def obtener_paises():
     return [

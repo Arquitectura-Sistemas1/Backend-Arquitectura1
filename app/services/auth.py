@@ -16,7 +16,6 @@ vamos a usar schemas para no andar referenciando el gran cuerpo de datos a cada 
 """
 
 
-
 def login_usuario(datos: LoginReq, db: Session):
     try:
         # 1 Buscar en la tabla de usuarios
