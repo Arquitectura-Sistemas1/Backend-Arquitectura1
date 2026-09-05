@@ -6,14 +6,17 @@ from app.schemas.info import (
     PaisResponse, PlataformaResponse, 
     RegionResponse, DesarrolladoraResponse, 
     GeneroRes, ClasificacionRes, 
-    MetodoPagoRes, TarifaRes)
+    MetodoPagoRes, TarifaRes,
+    DescuentoRes, DevolucionRes
+)
 
 
 from app.services.info import (
     obtener_paises, obtener_plataformas, 
     obtener_regiones, obtener_desarrolladoras, 
     obtener_generos, obtener_clasificaciones, 
-    listar_metodos_pago, listar_tarifas)
+    listar_metodos_pago, listar_tarifas,
+    obtener_descuentos, obtener_devoluciones)
 
 
 router = APIRouter(prefix="/info", tags=["informacion"])
@@ -63,10 +66,28 @@ def get_clasificaciones_endpoint(db: Session = Depends(get_db)):
     return obtener_clasificaciones(db)
 
 
-@router.get("/metodos", status_code=status.HTTP_200_OK, response_model=list[MetodoPagoRes])
+@router.get("/metodospago", status_code=status.HTTP_200_OK, response_model=list[MetodoPagoRes])
 def listar_metodos_pago_endpoint(db: Session = Depends(get_db)):
     return listar_metodos_pago(db)
 
 @router.get("/tarifas", status_code=status.HTTP_200_OK, response_model=list[TarifaRes])
 def listar_tarifas_endpoint(db: Session = Depends(get_db)):
     return listar_tarifas(db)
+
+
+@router.get(
+    "/descuentos",
+    status_code=status.HTTP_200_OK,
+    response_model=list[DescuentoRes]
+)
+def get_descuentos_endpoint(db: Session = Depends(get_db)):
+    return obtener_descuentos(db)
+
+
+@router.get(
+    "/devoluciones",
+    status_code=status.HTTP_200_OK,
+    response_model=list[DevolucionRes]
+)
+def get_devoluciones_endpoint(db: Session = Depends(get_db)):
+    return obtener_devoluciones(db)

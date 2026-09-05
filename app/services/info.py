@@ -60,3 +60,11 @@ def listar_metodos_pago(db: Session) -> list[MetodoPagoRes]: #oara listar todos 
 def listar_tarifas(db: Session) -> list[TarifaRes]: #para listar todas las tarifas disponibles
     resultados = ejecutar_sp(db, "sp_getTarifa")
     return [TarifaRes(**fila) for fila in resultados]
+
+
+def obtener_descuentos(db: Session):
+    return ejecutar_sp(db, "sp_getDescuento")
+
+
+def obtener_devoluciones(db: Session):
+    return ejecutar_sp(db, "sp_getDevolucion")

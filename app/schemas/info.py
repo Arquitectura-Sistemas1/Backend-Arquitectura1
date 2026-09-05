@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-
+from datetime import datetime
 class PaisResponse(BaseModel):
     ID: int
     Nombre: str
@@ -43,3 +43,23 @@ class TarifaRes(BaseModel):
     PrecioVenta: float
     PrecioRenta: float
     DuracionRentaHoras: int
+
+class DescuentoRes(BaseModel):
+    ID: int
+    ProductoID: int
+    Tipo: str
+    Valor: float
+    FechaInicio: datetime
+    FechaFin: datetime
+
+
+class DevolucionRes(BaseModel):
+    ID: int
+    PedidoItemID: int
+    UsuarioID: int
+    EmpleadoID: Optional[int] = None
+    FechaSolicitud: datetime
+    Motivo: str
+    Estado: str
+    FechaResolucion: Optional[datetime] = None
+    NotasAdministrador: Optional[str] = None
