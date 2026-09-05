@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-
+from app.schemas.info import MetodoPagoRes, TarifaRes
 from app.core.database import ejecutar_sp
 
 
@@ -51,3 +51,12 @@ def obtener_generos(db: Session):
 
 def obtener_clasificaciones(db: Session):
     return ejecutar_sp(db, "sp_getClasificacion")
+
+
+def listar_metodos_pago(db: Session) -> list[MetodoPagoRes]: #oara listar todos los metodos de pago disponibles
+    resultados = ejecutar_sp(db, "sp_getMetodoPago")
+    return [MetodoPagoRes(**fila) for fila in resultados]
+
+def listar_tarifas(db: Session) -> list[TarifaRes]: #para listar todas las tarifas disponibles
+    resultados = ejecutar_sp(db, "sp_getTarifa")
+    return [TarifaRes(**fila) for fila in resultados]

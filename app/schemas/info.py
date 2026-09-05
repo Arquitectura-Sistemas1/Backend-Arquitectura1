@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+from typing import Optional
 
 class PaisResponse(BaseModel):
     ID: int
@@ -32,3 +32,14 @@ class ClasificacionRes(BaseModel):
     Codigo: str
     EdadMinima: int
     Descripcion: str
+
+class MetodoPagoRes(BaseModel):
+    ID: int
+    Nombre: str
+    Instrucciones: Optional[str] = None
+
+class TarifaRes(BaseModel):
+    ID: int
+    PrecioVenta: float
+    PrecioRenta: float
+    DuracionRentaHoras: int
