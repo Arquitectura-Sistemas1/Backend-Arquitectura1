@@ -1,0 +1,16 @@
+Arturo, esto es lo que hay que hacer para integrar mis 2 endpoints:
+
+1. Mover schemas_item.py   -> app/schemas/item.py
+2. Mover services_item.py  -> app/services/item.py
+3. Mover endpoints_item.py -> app/api/endpoints/item.py
+4. En app/api/router.py agregar:
+
+   from app.api.endpoints.item import router as item_router
+   router.include_router(item_router)
+
+Con eso quedan disponibles:
+GET /item/generos
+GET /item/clasificaciones
+
+ Cualquier duda me avisas Arturo hare lo possible para apoyar te!
+- Fernando
