@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
-from app.schemas.info import PaisResponse, PlataformaResponse, RegionResponse, DesarrolladoraResponse
-from app.services.info import obtener_paises, obtener_plataformas, obtener_regiones, obtener_desarrolladoras
+from app.schemas.info import PaisResponse, PlataformaResponse, RegionResponse, DesarrolladoraResponse, GeneroRes, ClasificacionRes
+from app.services.info import obtener_paises, obtener_plataformas, obtener_regiones, obtener_desarrolladoras, obtener_generos, obtener_clasificaciones
 
 
 router = APIRouter(prefix="/info", tags=["informacion"])
@@ -42,3 +42,12 @@ def obtener_desarrolladoras_endpoint(
     db: Session = Depends(get_db)
 ):
     return obtener_desarrolladoras(db)
+
+@router.get("/generos", status_code=status.HTTP_200_OK, response_model=list[GeneroRes])
+def get_generos_endpoint(db: Session = Depends(get_db)):
+    return obtener_generos(db)
+
+
+@router.get("/clasificaciones", status_code=status.HTTP_200_OK, response_model=list[ClasificacionRes])
+def get_clasificaciones_endpoint(db: Session = Depends(get_db)):
+    return obtener_clasificaciones(db)

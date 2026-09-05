@@ -20,3 +20,15 @@ class DesarrolladoraResponse(BaseModel):
     id: int
     nombre: str
     sitio_web: str | None = None
+
+class GeneroRes(BaseModel):
+    ID: int
+    Nombre: str
+    Descripcion: str
+
+
+class ClasificacionRes(BaseModel):
+    ID: int
+    Codigo: str
+    EdadMinima: int
+    Descripcion: str
