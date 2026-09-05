@@ -2,24 +2,11 @@
 from fastapi import APIRouter
 from app.api.endpoints.auth import router as auth_router
 from app.api.endpoints.inventario import router as inv_router
+from app.api.endpoints.info import router as info_router
 
 router = APIRouter()
 
 
 router.include_router(auth_router)
 router.include_router(inv_router)
-
-
-#este se tiene que mover a otra parte, peude ser la capa informacion o la capa que trae
-#todos los datos como las plataormas, paises y datos auxiliaeres
-
-
-@router.get("/paises", tags=["Catálogos"])
-def obtener_paises():
-    return [
-        {"id": 1, "nombre": "Guatemala"},
-        {"id": 2, "nombre": "México"},
-        {"id": 3, "nombre": "Estados Unidos"},
-        {"id": 4, "nombre": "Canadá"},
-        {"id": 5, "nombre": "España"},
-    ]
+router.include_router(info_router)
