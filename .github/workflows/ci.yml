@@ -1,0 +1,51 @@
+name: CI/CD Pipeline - Oracle Cloud Production
+
+on:
+  push:
+    branches: [ "Produccion" ]
+  pull_request:
+    branches: [ "Produccion" ]
+
+jobs:
+  # 1. ETAPA DE INTEGRACIÓN CONTINUA (CI)
+  build-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Validar archivos obligatorios
+        run: |
+          test -f Dockerfile || (echo "ERROR: Falta Dockerfile" && exit 1)
+          test -f .env.example || (echo "ERROR: Falta .env.example" && exit 1)
+          test -f README.md || (echo "ERROR: Falta README.md" && exit 1)
+
+      - name: Validar compilacion de Dockerfile Backend
+        run: docker build -t backend-prod-test .
+
+  # 2. ETAPA DE DESPLIEGUE CONTINUO (CD) - PRODUCCIÓN (Oracle Cloud)iguohljbk
+  deploy-prod:
+    name: Despliegue a Producción (OCI)
+    needs: build-and-validate
+    # Solo se ejecuta en PUSH (no en Pull Requests)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/Produccion'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Desplegar en Oracle Cloud vía SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_SERVER_HOST }}
+          username: ${{ secrets.PROD_SERVER_USER }}
+          key: ${{ secrets.PROD_SSHKEY }}
+          port: 22
+          script: |
+            cd /home/arturo/Backend-Arquitectura1
+            git pull origin Produccion
+            docker build -t backend-prod .
+            docker container inspect backend-prod-container >/dev/null 2>&1 && docker stop backend-prod-container && docker rm backend-prod-container || true
+            docker run -d --name backend-prod-container --env-file .env -p 8080:8080 backend-prod
