@@ -201,7 +201,6 @@ def registrar_empleado(db: Session, datos: RegistrarEmpleadoReq):
 
 
 
-
 def verificar_y_completar_registro(datos: ConfirmaRegistroReq, db: Session):
     try:
         # 1. Validar el código de verificación (OTP)

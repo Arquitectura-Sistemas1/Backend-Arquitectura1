@@ -97,14 +97,14 @@ ver como subir solo carpetas especificas en git
 
 @router.get("/videojuegos", status_code=status.HTTP_200_OK, response_model=list[VideojuegoCatalogoResponse])
 def listar_videojuegos_catalogo_endpoint(
-    request: Request, # <-- Agregar este parámetro obligatorio para slowapi
+    request: Request,
     db: Session = Depends(get_db)
 ):
     return listar_videojuegos_catalogo(db)
 
 @router.post("/crear-videojuego", status_code=status.HTTP_201_CREATED, response_model=VideojuegoResponse)
 def crear_videojuego_endpoint(
-    datos: VideojuegoCreate = Depends(VideojuegoCreate.as_form), # <-- Inyección directa del Schema
+    datos: VideojuegoCreate = Depends(VideojuegoCreate.as_form),
     file: UploadFile | None = File(None),
     db: Session = Depends(get_db),
     usuario_actual: str = Depends(obtener_usuario_actual)
@@ -114,7 +114,7 @@ def crear_videojuego_endpoint(
 @router.post("/buscar-videojuego", status_code=status.HTTP_200_OK, response_model=VideoGameStrictResponse)
 def buscar_videojuego_endpoint(
     datos: VideojuegoGet,
-    db: Session = Depends(get_db),
-    usuario_actual: str = Depends(obtener_usuario_actual)
+    db: Session = Depends(get_db)
 ):
     return cargar_videojuegos(db, datos)
+

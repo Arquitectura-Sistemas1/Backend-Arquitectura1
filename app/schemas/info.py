@@ -46,7 +46,6 @@ class TarifaRes(BaseModel):
 
 class DescuentoRes(BaseModel):
     ID: int
-    ProductoID: int
     Tipo: str
     Valor: float
     FechaInicio: datetime

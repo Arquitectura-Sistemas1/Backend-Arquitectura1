@@ -22,8 +22,6 @@ def comparar_hash (str: str, hash: str):
         return res
     except (VerifyMismatchError, VerificationError):
         return False
-
-
 #aca las partes de los jwt
 
 SECRET_KEY = settings.KEY_JWT
