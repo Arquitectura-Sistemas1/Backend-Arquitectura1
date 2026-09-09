@@ -1,0 +1,23 @@
+endpoint agregar item pedido (fernando)
+
+endpoint crear pedido (yeisson)
+
+endpoint ir a pagar (eduardoo + Angel)
+
+endpoint pagar/propcesarpago (Ddominick)
+
+agregarpedidoitem (comercial) se encarga de agregar a la lista pedidoitem un videojuego asociado y el pedido actual
+
+creadpedido (comercial) genera un registro en db sobre un nuevo pedido
+
+
+procesarpedido (comercial) pasaria de fase de llenar un pedido a intentar el pago (hace factura y manda a tabla pedidos completados)
+
+
+pagar/procesar pago (comercial ) llama a un metodo de pago y registra el apgo (simulando que se pago)
+
+
+eliminarpedido
+
+
+eliminiarpedidoitem

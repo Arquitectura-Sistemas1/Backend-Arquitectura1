@@ -4,7 +4,7 @@ from app.core.database import Session
 from app.api.deps import get_db
 from app.services.auth import login_usuario, solicitud_usuario, verificar_y_completar_registro, registrar_empleado
 from app.core.limiter import limiter
-from app.core.security import ACCESS_TOKEN_EXPIRE_MINUTES, obtener_empleado_admin_actual, obtener_payload_actual
+from app.core.security import ACCESS_TOKEN_EXPIRE_MINUTES, obtener_empleado_admin_actual, obtener_payload_actual, obtener_usuario_actual
 from app.schemas.auth import (
     LoginRes, LoginReq, SolicitudUsuarioReq, SolicitudUsuarioRes, ConfirmaRegistroReq,
     ConfirmaRegistroRes, RegistrarEmpleadoReq, RegistrarEmpleadoRes
@@ -78,11 +78,11 @@ def confirmar_registro_endpoint(request: Request, datos: ConfirmaRegistroReq, db
 
 @router.get("/me", status_code=status.HTTP_200_OK)
 def obtener_usuario_actual_endpoint(request: Request):
-    """Devuelve el payload del JWT guardado en la cookie `access_token`.
+    """Devuelve el id del usuario guardado en la cookie `access_token`.
 
     Útil para que el frontend verifique si el usuario tiene sesión activa sin exponer el token.
     """
-    payload = obtener_payload_actual(request)
+    payload = obtener_usuario_actual(request)
     return {"usuario": payload}
 
 
