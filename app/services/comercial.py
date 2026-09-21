@@ -75,6 +75,7 @@ def generar_factura(db: Session, transaccion_id: int, datos: ProcesarPagoReq) ->
 
 
 def procesar_pago(db: Session, datos: ProcesarPagoReq) -> dict[str, int]:
+    # Dóminick Tomás: Primero registro el pago y uso el TransaccionID para generar la factura.
     transaccion_id = registrar_pago(db, datos)
     factura_id = generar_factura(db, transaccion_id, datos)
 

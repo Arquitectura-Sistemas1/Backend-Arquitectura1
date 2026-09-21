@@ -4,6 +4,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 
+# Dóminick Tomás: Acá definí los datos que necesito recibir para procesar el pago.
 class ProcesarPagoReq(BaseModel):
     PedidoID: int
     MetodoPagoID: int
@@ -16,6 +17,7 @@ class ProcesarPagoReq(BaseModel):
     PDFUrl: str
 
 
+# Dóminick Tomás: Acá devuelvo los identificadores de la transacción y la factura.
 class ProcesarPagoRes(BaseModel):
     TransaccionID: int
     FacturaID: int

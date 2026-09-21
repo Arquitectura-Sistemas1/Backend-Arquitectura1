@@ -9,6 +9,7 @@ from app.services.comercial import procesar_pago
 router = APIRouter(prefix="/comercial", tags=["Comercial"])
 
 
+# Dóminick Tomás: Acá implementé el endpoint que recibe la solicitud para procesar el pago.
 @router.post(
     "/procesar-pago",
     status_code=status.HTTP_201_CREATED,

@@ -9,6 +9,7 @@ router = APIRouter()
 
 
 router.include_router(auth_router)
+# Dóminick Tomás: Acá registré mi router para habilitar el endpoint de pago.
 router.include_router(comercial_router)
 router.include_router(inv_router)
 router.include_router(info_router)
