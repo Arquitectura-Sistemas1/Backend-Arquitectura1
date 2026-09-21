@@ -1,3 +1,6 @@
+# ============================================
+# DESTINO FINAL: para app/schemas/item.py
+# ============================================
 from pydantic import BaseModel
 
 
@@ -12,4 +15,3 @@ class ClasificacionRes(BaseModel):
     Codigo: str
     EdadMinima: int
     Descripcion: str
-# ===== Fer =====
