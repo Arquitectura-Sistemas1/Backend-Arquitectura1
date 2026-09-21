@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.core.database import ejecutar_sp_commit
-from app.schemas.comercial import ProcesarPagoReq
+from app.schemas.comercial import ProcesarPagoReq, CrearPedidoReq
 
 
 def _obtener_primera_fila(resultado: Any) -> dict[str, Any]:
@@ -82,4 +82,32 @@ def procesar_pago(db: Session, datos: ProcesarPagoReq) -> dict[str, int]:
     return {
         "TransaccionID": transaccion_id,
         "FacturaID": factura_id,
+    }
+
+# Yeisson Poroj: Ejecuta el stored procedure sp_CrearPedido para crear un pedido y devolver su PedidoID
+
+def crear_pedido(db: Session, datos: CrearPedidoReq) -> dict[str, int]:
+    try:
+        resultado = ejecutar_sp_commit(
+            db,
+            "sp_CrearPedido",
+            UsuarioID=datos.UsuarioID,
+        )
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error BD al crear pedido: {str(e.__dict__.get('orig', e))}",
+        )
+
+    fila = _obtener_primera_fila(resultado)
+    pedido_id = fila.get("PedidoID")
+
+    if pedido_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="El Stored Procedure 'sp_CrearPedido' no devolvió PedidoID.",
+        )
+
+    return {
+        "PedidoID": int(pedido_id)
     }

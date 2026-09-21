@@ -21,3 +21,13 @@ class ProcesarPagoReq(BaseModel):
 class ProcesarPagoRes(BaseModel):
     TransaccionID: int
     FacturaID: int
+
+# Yeisson Poroj: Define los datos de entrada y salida para crear un nuevo pedido.
+
+
+class CrearPedidoReq(BaseModel):
+    UsuarioID: int
+
+
+class CrearPedidoRes(BaseModel):
+    PedidoID: int
