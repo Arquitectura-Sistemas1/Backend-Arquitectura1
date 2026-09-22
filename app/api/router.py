@@ -1,13 +1,12 @@
-# app/api/router.py
 from fastapi import APIRouter
 from app.api.endpoints.auth import router as auth_router
 from app.api.endpoints.inventario import router as inv_router
 from app.api.endpoints.info import router as info_router
 
 # ===== Fer =====
-from app.api.endpoints.item import router as item_router
 from app.api.endpoints.comercial import router as comercial_router
-# =====
+# ===== Fer =====
+
 router = APIRouter()
 
 
@@ -16,6 +15,5 @@ router.include_router(inv_router)
 router.include_router(info_router)
 
 # ===== Fer =====
-router.include_router(item_router)
 router.include_router(comercial_router)
-# =====
+# ===== Fer =====
