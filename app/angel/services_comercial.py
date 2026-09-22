@@ -1,65 +1,31 @@
 from sqlalchemy.orm import Session
 from app.core.database import ejecutar_sp
+from app.schemas.comercial import AccionPedido, GestionarPedidoReq
 
 
-# =====================================
-# REVISAR PEDIDO
-# =====================================
+def gestionar_pedido(db: Session, datos: GestionarPedidoReq):
+    """Ejecuta el SP comercial que corresponde a la acción solicitada."""
+    if datos.Accion == AccionPedido.REVISAR:
+        return ejecutar_sp(
+            db,
+            "sp_RevisarPedido",
+            {
+                "PedidoID": datos.PedidoID,
+                "EmpleadoID": datos.EmpleadoID,
+                "Aprobar": datos.Aprobar,
+                "Observacion": datos.Observacion,
+            },
+        )
 
-def revisar_pedido(
-    db: Session,
-    pedido_id: int,
-    empleado_id: int,
-    aprobar: bool,
-    observacion: str | None = None
-):
-    parametros = {
-        "PedidoID": pedido_id,
-        "EmpleadoID": empleado_id,
-        "Aprobar": aprobar,
-        "Observacion": observacion
-    }
-
-    return ejecutar_sp(
-        db,
-        "sp_RevisarPedido",
-        parametros
-    )
-
-
-# =====================================
-# RECALCULAR PEDIDO
-# =====================================
-
-def recalcular_pedido(
-    db: Session,
-    pedido_id: int
-):
-    parametros = {
-        "PedidoID": pedido_id
-    }
-
-    return ejecutar_sp(
-        db,
-        "sp_RecalcularPedido",
-        parametros
-    )
-
-
-# =====================================
-# COMPLETAR PEDIDO
-# =====================================
-
-def completar_pedido(
-    db: Session,
-    pedido_id: int
-):
-    parametros = {
-        "PedidoID": pedido_id
-    }
+    if datos.Accion == AccionPedido.RECALCULAR:
+        return ejecutar_sp(
+            db,
+            "sp_RecalcularPedido",
+            {"PedidoID": datos.PedidoID},
+        )
 
     return ejecutar_sp(
         db,
         "sp_CompletarPedido",
-        parametros
+        {"PedidoID": datos.PedidoID},
     )

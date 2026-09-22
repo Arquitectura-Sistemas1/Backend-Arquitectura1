@@ -3,81 +3,27 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
 
-from app.services.comercial import (
-    revisar_pedido,
-    recalcular_pedido,
-    completar_pedido
-)
-
 from app.schemas.comercial import (
-    RevisarPedidoReq,
     RevisarPedidoRes,
-    RecalcularPedidoReq,
     RecalcularPedidoRes,
-    CompletarPedidoReq,
-    CompletarPedidoRes
+    CompletarPedidoRes,
+    GestionarPedidoReq,
 )
+from app.services.comercial import gestionar_pedido
 
 router = APIRouter(
     prefix="/comercial",
     tags=["Comercial"]
 )
 
-# =====================================
-# REVISAR PEDIDO
-# =====================================
-
-@router.put(
-    "/revisar-pedido",
-    status_code=status.HTTP_200_OK,
-    response_model=RevisarPedidoRes
-)
-def revisar_pedido_endpoint(
-    datos: RevisarPedidoReq,
-    db: Session = Depends(get_db)
-):
-    return revisar_pedido(
-        db,
-        datos.PedidoID,
-        datos.EmpleadoID,
-        datos.Aprobar,
-        datos.Observacion
-    )
-
-
-# =====================================
-# RECALCULAR PEDIDO
-# =====================================
-
 @router.post(
-    "/recalcular-pedido",
+    "/gestionar-pedido",
     status_code=status.HTTP_200_OK,
-    response_model=RecalcularPedidoRes
+    response_model=RevisarPedidoRes | RecalcularPedidoRes | CompletarPedidoRes,
 )
-def recalcular_pedido_endpoint(
-    datos: RecalcularPedidoReq,
-    db: Session = Depends(get_db)
+def gestionar_pedido_endpoint(
+    datos: GestionarPedidoReq,
+    db: Session = Depends(get_db),
 ):
-    return recalcular_pedido(
-        db,
-        datos.PedidoID
-    )
-
-
-# =====================================
-# COMPLETAR PEDIDO
-# =====================================
-
-@router.post(
-    "/completar-pedido",
-    status_code=status.HTTP_200_OK,
-    response_model=CompletarPedidoRes
-)
-def completar_pedido_endpoint(
-    datos: CompletarPedidoReq,
-    db: Session = Depends(get_db)
-):
-    return completar_pedido(
-        db,
-        datos.PedidoID
-    )
+    """Un único endpoint para revisar, recalcular o completar un pedido."""
+    return gestionar_pedido(db, datos)
