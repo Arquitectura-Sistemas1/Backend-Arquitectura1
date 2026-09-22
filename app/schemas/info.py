@@ -62,3 +62,26 @@ class DevolucionRes(BaseModel):
     Estado: str
     FechaResolucion: Optional[datetime] = None
     NotasAdministrador: Optional[str] = None
+
+
+class PedidoItemRes(BaseModel):
+    PedidoItemID: int
+    PedidoID: int
+    ProductoID: int
+    TipoItem: str
+    PrecioAplicado: float
+    DescuentoAplicado: float
+    Subtotal: float
+    VideojuegoID: int
+    VideojuegoTitulo: str
+    SKU: Optional[str] = None
+    CodigoLicencia: Optional[str] = None
+    PortadaURL: Optional[str] = None
+
+
+class PedidoActualRes(BaseModel):
+    PedidoID: Optional[int] = None
+    Subtotal: float = 0.0
+    DescuentoTotal: float = 0.0
+    Total: float = 0.0
+    Items: list[PedidoItemRes] = []

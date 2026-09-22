@@ -68,3 +68,77 @@ def obtener_descuentos(db: Session):
 
 def obtener_devoluciones(db: Session):
     return ejecutar_sp(db, "sp_getDevolucion")
+
+
+def obtener_pedido_actual_items(db: Session, usuario_id: int):
+    """
+    Obtiene los detalles y los ítems del pedido activo (CREADO o PENDIENTE_PAGO) del usuario autenticado.
+    """
+    from sqlalchemy import text
+
+    # 1. Buscar el pedido activo
+    pedido_row = db.execute(
+        text(
+            """
+            SELECT TOP 1 ID, Subtotal, DescuentoTotal, Total
+            FROM dbo.Pedido
+            WHERE UsuarioID = :usuario_id
+              AND Estado IN ('CREADO', 'PENDIENTE_PAGO')
+            ORDER BY FechaCreacion DESC
+            """
+        ),
+        {"usuario_id": usuario_id},
+    ).mappings().first()
+
+    if not pedido_row or not pedido_row.get("ID"):
+        return {
+            "PedidoID": None,
+            "Subtotal": 0.0,
+            "DescuentoTotal": 0.0,
+            "Total": 0.0,
+            "Items": []
+        }
+
+    pedido_id = int(pedido_row["ID"])
+
+    # 2. Consultar los ítems asociados al pedido
+    items_rows = db.execute(
+        text(
+            """
+            SELECT 
+                pi.ID AS PedidoItemID,
+                pi.PedidoID,
+                pi.ProductoID,
+                pi.TipoItem,
+                CAST(pi.PrecioAplicado AS FLOAT) AS PrecioAplicado,
+                CAST(pi.DescuentoAplicado AS FLOAT) AS DescuentoAplicado,
+                CAST((pi.PrecioAplicado - pi.DescuentoAplicado) AS FLOAT) AS Subtotal,
+                v.ID AS VideojuegoID,
+                v.Titulo AS VideojuegoTitulo,
+                pr.SKU,
+                pr.Codigo_Licencia AS CodigoLicencia,
+                (
+                    SELECT TOP 1 URL 
+                    FROM dbo.Portada 
+                    WHERE VideojuegoID = v.ID 
+                    ORDER BY ID ASC
+                ) AS PortadaURL
+            FROM dbo.PedidoItem pi
+            INNER JOIN dbo.Producto pr ON pr.ProductoID = pi.ProductoID
+            INNER JOIN dbo.Videojuego v ON v.ID = pr.VideojuegoID
+            WHERE pi.PedidoID = :pedido_id
+            ORDER BY pi.ID ASC
+            """
+        ),
+        {"pedido_id": pedido_id},
+    ).mappings().all()
+
+    items = [dict(row) for row in items_rows]
+
+    return {
+        "PedidoID": pedido_id,
+        "Subtotal": float(pedido_row.get("Subtotal") or 0.0),
+        "DescuentoTotal": float(pedido_row.get("DescuentoTotal") or 0.0),
+        "Total": float(pedido_row.get("Total") or 0.0),
+        "Items": items
+    }

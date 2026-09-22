@@ -28,19 +28,39 @@ def login_usuario(datos: LoginReq, db: Session):
                     status_code=status.HTTP_401_UNAUTHORIZED, 
                     detail="Contraseña incorrecta."
                 )
+            
+            # Buscar si el usuario tiene un pedido activo (CREADO o PENDIENTE_PAGO)
+            u_id = credencial["UsuarioID"]
+            pedido_row = db.execute(
+                text(
+                    """
+                    SELECT TOP 1 ID AS PedidoID
+                    FROM dbo.Pedido
+                    WHERE UsuarioID = :usuario_id
+                      AND Estado IN ('CREADO', 'PENDIENTE_PAGO')
+                    ORDER BY FechaCreacion DESC
+                    """
+                ),
+                {"usuario_id": u_id},
+            ).mappings().first()
+
+            pedido_id = int(pedido_row["PedidoID"]) if pedido_row and pedido_row.get("PedidoID") else None
+
             token = crear_token_acceso(data={
-                "sub": str(credencial["UsuarioID"]),
+                "sub": str(u_id),
                 "usuario": credencial["Usuario"],
                 "tipo_cuenta": "Usuario"
             })
             return {
                 "message": "Inicio de sesión exitoso",
                 "usuario": {
-                    "usuario_id": credencial["UsuarioID"], # o UsuarioID
+                    "usuario_id": u_id,
                     "usuario": credencial["Usuario"],
-                    "tipo_cuenta": "Usuario"
+                    "tipo_cuenta": "Usuario",
+                    "pedido_id": pedido_id
                 }
             }, token
+
 
         # 2 Si no existe como usuario, buscar en la tabla de empleados
         resultados_empleado = ejecutar_sp(db, "sp_ObtenerCredencialEmpleado", Login=datos.usuario)

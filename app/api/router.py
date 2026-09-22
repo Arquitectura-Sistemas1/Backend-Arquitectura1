@@ -3,10 +3,13 @@ from fastapi import APIRouter
 from app.api.endpoints.auth import router as auth_router
 from app.api.endpoints.inventario import router as inv_router
 from app.api.endpoints.info import router as info_router
-
+from app.api.endpoints.comercial import router as comercial_router
+from app.api.endpoints.financiero import router as financiero_router
 router = APIRouter()
 
 
 router.include_router(auth_router)
 router.include_router(inv_router)
 router.include_router(info_router)
+router.include_router(comercial_router)
+router.include_router(financiero_router)

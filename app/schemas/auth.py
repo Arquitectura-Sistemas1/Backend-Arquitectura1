@@ -10,6 +10,8 @@ class UsuarioInfo(BaseModel):
     usuario: str
     tipo_cuenta: str
     rol_id: int | None = None
+    pedido_id: int | None = None
+
 
 class LoginRes(BaseModel):
     message: str = "Inicio de Sesion Exitoso"

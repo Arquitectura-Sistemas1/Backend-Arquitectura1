@@ -7,16 +7,19 @@ from app.schemas.info import (
     RegionResponse, DesarrolladoraResponse, 
     GeneroRes, ClasificacionRes, 
     MetodoPagoRes, TarifaRes,
-    DescuentoRes, DevolucionRes
+    DescuentoRes, DevolucionRes,
+    PedidoActualRes
 )
-
-
 from app.services.info import (
     obtener_paises, obtener_plataformas, 
     obtener_regiones, obtener_desarrolladoras, 
     obtener_generos, obtener_clasificaciones, 
     listar_metodos_pago, listar_tarifas,
-    obtener_descuentos, obtener_devoluciones)
+    obtener_descuentos, obtener_devoluciones,
+    obtener_pedido_actual_items
+)
+from app.core.security import obtener_usuario_actual
+
 
 
 router = APIRouter(prefix="/info", tags=["informacion"])
@@ -91,3 +94,16 @@ def get_descuentos_endpoint(db: Session = Depends(get_db)):
 )
 def get_devoluciones_endpoint(db: Session = Depends(get_db)):
     return obtener_devoluciones(db)
+
+
+@router.get(
+    "/pedido-items",
+    status_code=status.HTTP_200_OK,
+    response_model=PedidoActualRes,
+)
+def obtener_pedido_actual_items_endpoint(
+    db: Session = Depends(get_db),
+    usuario_actual: str = Depends(obtener_usuario_actual),
+):
+    """Obtiene los ítems y totales del pedido activo del usuario autenticado."""
+    return obtener_pedido_actual_items(db, int(usuario_actual))

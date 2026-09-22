@@ -176,7 +176,7 @@ def crear_videojuego(db: Session, file: Optional[UploadFile], datos: Any):
         "ClasificacionID": datos_dict.get("clasificacion_id"),
         "RegionID": datos_dict.get("region_id"),
         "TarifaID": datos_dict.get("tarifa_id"),
-        "DescuentoID": datos_dict.get("descuento_id"),
+        "DescuentoID": datos_dict.get("descuento_id") or 1,
         "Titulo": datos_dict.get("titulo"),
         "Descripcion": datos_dict.get("descripcion"),
         "FechaLanzamiento": datos_dict.get("fecha_lanzamiento"),

@@ -12,3 +12,5 @@ slowapi
 pymssql
 passlib
 pyjwt
+fpdf2
+Pillow

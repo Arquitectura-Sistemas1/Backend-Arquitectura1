@@ -14,7 +14,7 @@ class VideojuegoCreate(BaseModel):
     clasificacion_id: int
     region_id: int
     tarifa_id: int
-    descuento_id: int
+    descuento_id: int = 1
     titulo: str
     descripcion: str
     fecha_lanzamiento: date
@@ -30,7 +30,7 @@ class VideojuegoCreate(BaseModel):
         clasificacion_id: int = Form(...),
         region_id: int = Form(...),
         tarifa_id: int = Form(...),
-        descuento_id: int = Form(...),
+        descuento_id: int = Form(1),
         titulo: str = Form(...),
         descripcion: str = Form(...),
         fecha_lanzamiento: date = Form(...),
@@ -53,6 +53,7 @@ class VideojuegoCreate(BaseModel):
             genero_id=genero_id,
             desarrolladora_id=desarrolladora_id,
         )
+
 
 
 class VideojuegoResponse(BaseModel):
