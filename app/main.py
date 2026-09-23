@@ -14,14 +14,19 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configuración de CORS
+# Configuración de CORS
+# Configuración de CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://luxury-roster-uncouth.ngrok-free.dev"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://luxury-roster-uncouth.ngrok-free.dev",
+        "https://sedation-scribe-state.ngrok-free.dev",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 # importar y registrar el router
 from app.api.router import router as usuarios_router
 app.include_router(usuarios_router)
