@@ -20,6 +20,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
+        "http://localhost:5173",
         "https://luxury-roster-uncouth.ngrok-free.dev",
         "https://sedation-scribe-state.ngrok-free.dev",
     ],
