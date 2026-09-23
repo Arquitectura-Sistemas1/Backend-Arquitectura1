@@ -11,7 +11,7 @@ En Vite, las variables de entorno deben comenzar obligatoriamente con el prefijo
 
 Crea un archivo `.env` en la raíz de tu proyecto React + Vite:
 ```env
-VITE_API_BASE_URL=https://luxury-roster-uncouth.ngrok-free.dev
+VITE_API_BASE_URL=https://sedation-scribe-state.ngrok-free.dev/docs#/
 ```
 
 ### 1.2. Transmisión de Token JWT (Cookie HTTP-Only)
