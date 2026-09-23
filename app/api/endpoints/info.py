@@ -8,7 +8,8 @@ from app.schemas.info import (
     GeneroRes, ClasificacionRes, 
     MetodoPagoRes, TarifaRes,
     DescuentoRes, DevolucionRes,
-    PedidoActualRes
+    PedidoActualRes, PedidoResumenRes, DetallePedidoRes,
+    MiDevolucionRes
 )
 from app.services.info import (
     obtener_paises, obtener_plataformas, 
@@ -16,9 +17,12 @@ from app.services.info import (
     obtener_generos, obtener_clasificaciones, 
     listar_metodos_pago, listar_tarifas,
     obtener_descuentos, obtener_devoluciones,
-    obtener_pedido_actual_items
+    obtener_pedido_actual_items, obtener_mis_pedidos, obtener_detalle_pedido,
+    obtener_mis_devoluciones
 )
+
 from app.core.security import obtener_usuario_actual
+
 
 
 
@@ -107,3 +111,43 @@ def obtener_pedido_actual_items_endpoint(
 ):
     """Obtiene los ítems y totales del pedido activo del usuario autenticado."""
     return obtener_pedido_actual_items(db, int(usuario_actual))
+
+
+@router.get(
+    "/mis-pedidos",
+    status_code=status.HTTP_200_OK,
+    response_model=list[PedidoResumenRes],
+)
+def obtener_mis_pedidos_endpoint(
+    db: Session = Depends(get_db),
+    usuario_actual: str = Depends(obtener_usuario_actual),
+):
+    """Obtiene el historial de pedidos del usuario autenticado con URL de factura si aplica."""
+    return obtener_mis_pedidos(db, int(usuario_actual))
+
+
+@router.get(
+    "/detalle-pedido/{pedido_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=DetallePedidoRes,
+)
+def obtener_detalle_pedido_endpoint(
+    pedido_id: int,
+    db: Session = Depends(get_db),
+    usuario_actual: str = Depends(obtener_usuario_actual),
+):
+    """Obtiene el detalle de un pedido específico por ID (ítems, totales y factura) para el usuario autenticado."""
+    return obtener_detalle_pedido(db, int(usuario_actual), pedido_id)
+
+
+@router.get(
+    "/mis-devoluciones",
+    status_code=status.HTTP_200_OK,
+    response_model=list[MiDevolucionRes],
+)
+def obtener_mis_devoluciones_endpoint(
+    db: Session = Depends(get_db),
+    usuario_actual: str = Depends(obtener_usuario_actual),
+):
+    """Obtiene el historial de solicitudes de devolución del usuario autenticado."""
+    return obtener_mis_devoluciones(db, int(usuario_actual))

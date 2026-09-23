@@ -8,7 +8,9 @@ from app.schemas.financiero import (
     AsignarDescuentoReq,
     CrearDescuentoReq,
     CrearCuponReq,
+    CrearTarifaReq,
 )
+
 
 
 def _limpiar_error_sql(e: Exception) -> str:
@@ -178,3 +180,41 @@ def crear_cupon(db: Session, datos: CrearCuponReq) -> dict[str, Any]:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Error al crear cupón: {_limpiar_error_sql(e)}",
         )
+
+
+def crear_tarifa(db: Session, datos: CrearTarifaReq) -> dict[str, Any]:
+    """Crea una nueva tarifa (precios de venta/renta) en dbo.Tarifa."""
+    try:
+        res = db.execute(
+            text(
+                """
+                INSERT INTO dbo.Tarifa (PrecioVenta, PrecioRenta, DuracionRentaHoras)
+                OUTPUT INSERTED.ID AS TarifaID
+                VALUES (:precio_venta, :precio_renta, :duracion_renta_horas)
+                """
+            ),
+            {
+                "precio_venta": datos.PrecioVenta,
+                "precio_renta": datos.PrecioRenta,
+                "duracion_renta_horas": datos.DuracionRentaHoras,
+            },
+        ).mappings().first()
+
+        db.commit()
+        tarifa_id = int(res["TarifaID"])
+
+        return {
+            "status": "success",
+            "mensaje": f"Tarifa {tarifa_id} creada exitosamente.",
+            "TarifaID": tarifa_id,
+            "PrecioVenta": datos.PrecioVenta,
+            "PrecioRenta": datos.PrecioRenta,
+            "DuracionRentaHoras": datos.DuracionRentaHoras,
+        }
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error al crear tarifa: {_limpiar_error_sql(e)}",
+        )
+

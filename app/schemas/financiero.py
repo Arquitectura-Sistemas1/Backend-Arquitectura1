@@ -75,3 +75,41 @@ class CrearCuponRes(BaseModel):
     Tipo: str
     Valor: Decimal
     FechaExpiracion: datetime
+
+
+# ==========================================
+# 4. CREAR TARIFA
+# ==========================================
+class CrearTarifaReq(BaseModel):
+    PrecioVenta: Decimal | None = None
+    PrecioRenta: Decimal | None = None
+    DuracionRentaHoras: int | None = None
+
+    @model_validator(mode="after")
+    def validar_tarifa(self):
+        if self.PrecioVenta is None and self.PrecioRenta is None:
+            raise ValueError("Debe ingresar al menos un precio de venta o un precio de renta.")
+        
+        if self.PrecioVenta is not None and self.PrecioVenta < 0:
+            raise ValueError("El precio de venta no puede ser negativo.")
+            
+        if self.PrecioRenta is not None:
+            if self.PrecioRenta < 0:
+                raise ValueError("El precio de renta no puede ser negativo.")
+            if self.DuracionRentaHoras is None or self.DuracionRentaHoras <= 0:
+                raise ValueError("Si ingresa un precio de renta, debe especificar una duración en horas mayor a 0.")
+        else:
+            if self.DuracionRentaHoras is not None:
+                raise ValueError("Si no hay precio de renta, la duración de renta debe ser nula.")
+
+        return self
+
+
+class CrearTarifaRes(BaseModel):
+    status: str
+    mensaje: str
+    TarifaID: int
+    PrecioVenta: Decimal | None = None
+    PrecioRenta: Decimal | None = None
+    DuracionRentaHoras: int | None = None
+

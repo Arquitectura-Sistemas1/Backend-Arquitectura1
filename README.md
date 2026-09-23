@@ -65,6 +65,44 @@ export default defineConfig({
 
 ---
 
+### 1.4. Matriz de Vistas / Navegación y Endpoints por Rol
+
+#### 👤 Vistas y Acciones del Cliente (Usuario)
+| Vista / Pantalla Frontend | Acción en Interfaz | Endpoint Backend | Método |
+| :--- | :--- | :--- | :--- |
+| **Login / Sign In** | Autenticación de usuario | `/auth/login` | `POST` |
+| **Registro / Sign Up** | Solicitar código OTP por correo | `/auth/solicitud-usuario` | `POST` |
+| **Verificación OTP** | Confirmar código y activar cuenta | `/auth/confirmar-registro` | `POST` |
+| **Página Principal / Catálogo** | Cargar lista entera de videojuegos | `/inv/videojuegos` | `GET` |
+| **Detalle de Juego** | Buscar/Ver detalles de un juego | `/inv/buscar-videojuego` | `POST` |
+| **Carrito de Compras** | Consultar ítems del carrito activo | `/info/pedido-items` | `GET` |
+| **Carrito de Compras** | Agregar juego al carrito (venta/renta) | `/comercial/agregar-item-pedido` | `POST` |
+| **Carrito de Compras** | Aplicar cupón de descuento | `/comercial/aplicar-cupon` | `POST` |
+| **Carrito de Compras** | Pagar pedido y generar factura | `/comercial/procesar-pago` | `POST` |
+| **Mis Pedidos** | Ver lista de pedidos realizados y URL factura | `/info/mis-pedidos` | `GET` |
+| **Submenú / Modal Pedido** | Ver ítems de un pedido específico y botón a factura | `/info/detalle-pedido/{pedido_id}` | `GET` |
+| **Mis Solicitudes Devolución** | Ver lista de solicitudes propias y sus estados | `/info/mis-devoluciones` | `GET` |
+| **Solicitar Devolución** | Formulario para pedir reembolso de un ítem | `/gestion/solicitar-devolucion` | `POST` |
+| **Perfil / Barra de Navegación**| Cerrar sesión de usuario | `/auth/logout` | `POST` |
+| **Verificación de Sesión** | Verificar si el usuario sigue autenticado | `/auth/me` | `GET` |
+
+#### 👨‍💼 Vistas y Acciones del Empleado / Administrador
+| Vista / Pantalla Frontend | Acción en Interfaz | Endpoint Backend | Método |
+| :--- | :--- | :--- | :--- |
+| **Login Empleado** | Iniciar sesión como empleado/admin | `/auth/login` | `POST` |
+| **Catálogo de Videojuegos** | Visualizar inventario global | `/inv/videojuegos` | `GET` |
+| **Crear Videojuego** | Registrar nuevo videojuego (con imagen Cloudinary) | `/inv/crear-videojuego` | `POST` |
+| **Gestión Financiera** | Registrar nuevo descuento | `/financiero/crear-descuento` | `POST` |
+| **Gestión Financiera** | Registrar nuevo cupón promocional | `/financiero/crear-cupon` | `POST` |
+| **Gestión Financiera** | Crear nueva tarifa (precios venta/renta) | `/financiero/crear-tarifa` | `POST` |
+| **Gestión Financiera** | Asignar descuento a un videojuego | `/financiero/asignar-descuento` | `POST` |
+| **Gestión de Pedidos** | Aprobar / Completar pedidos de clientes | `/comercial/gestionar-pedido` | `POST` |
+| **Vista de Devoluciones** | Ver todas las solicitudes de devolución recibidas | `/info/devoluciones` | `GET` |
+| **Gestionar Devolución** | Aprobar, rechazar o procesar reembolso de devolución | `/gestion/actualizar-estado-devolucion` | `POST` |
+| **Administración Empleados** | Registrar nuevo empleado (Solo Admin) | `/auth/registrar-empleado` | `POST` |
+
+---
+
 ## 2. Regla Fundamental de Frontend: Formularios y Llaves Foráneas (FKs)
 
 > [!IMPORTANT]
@@ -184,7 +222,6 @@ export default defineConfig({
 | `GET /info/generos` | Listado de géneros | `[{ "ID": 1, "Nombre": "Acción", "Descripcion": "..." }]` |
 | `GET /info/desarrolladoras` | Listado de desarrolladoras | `[{ "id": 1, "nombre": "Ubisoft", "sitio_web": "..." }]` |
 | `GET /info/metodospago` | Listado de métodos de pago | `[{ "ID": 1, "Nombre": "Tarjeta de Crédito", "Instrucciones": "..." }]` |
-| `GET /info/devoluciones` | Listado de solicitudes de devolución | `[{ "ID": 1, "PedidoItemID": 20, "Estado": "PENDIENTE", ... }]` |
 
 ---
 
@@ -219,11 +256,114 @@ export default defineConfig({
 
 ---
 
+### 4.3. Listar Historial de Mis Pedidos (Cliente)
+- **Endpoint**: `GET /info/mis-pedidos` (Requiere autenticación)
+- **Uso Frontend**: Cargar las tarjetas o tabla en la vista "Mis Pedidos" del usuario. Incluye `FacturaURL` y `NumeroFactura` para renderizar directamente un botón "Ver Factura" en la tarjeta si el pedido ya fue pagado.
+- **Respuesta (`200 OK`)**:
+```json
+[
+  {
+    "PedidoID": 14,
+    "Estado": "PAGADO",
+    "Subtotal": 120.0,
+    "DescuentoTotal": 15.0,
+    "Impuestos": 0.0,
+    "Total": 105.0,
+    "FechaCreacion": "2026-09-22T17:30:00",
+    "NumeroFactura": "FAC-20260922173000-A1B2C3",
+    "FacturaURL": "https://res.cloudinary.com/..."
+  }
+]
+```
+
+---
+
+### 4.4. Obtener Detalle de un Pedido Específico (Cliente)
+- **Endpoint**: `GET /info/detalle-pedido/{pedido_id}` (Requiere autenticación)
+- **Uso Frontend**: Se ejecuta cuando el usuario hace clic sobre una tarjeta de pedido específica para abrir el submenú/modal con los ítems comprados/rentados, totales y el link a la factura (`FacturaURL`).
+- **Respuesta (`200 OK`)**:
+```json
+{
+  "PedidoID": 14,
+  "Estado": "PAGADO",
+  "Subtotal": 120.0,
+  "DescuentoTotal": 15.0,
+  "Impuestos": 0.0,
+  "Total": 105.0,
+  "FechaCreacion": "2026-09-22T17:30:00",
+  "NumeroFactura": "FAC-20260922173000-A1B2C3",
+  "FacturaURL": "https://res.cloudinary.com/...",
+  "Items": [
+    {
+      "PedidoItemID": 20,
+      "PedidoID": 14,
+      "ProductoID": 1,
+      "TipoItem": "VENTA",
+      "PrecioAplicado": 60.0,
+      "DescuentoAplicado": 10.0,
+      "Subtotal": 50.0,
+      "VideojuegoID": 18,
+      "VideojuegoTitulo": "Nebula Horizon",
+      "SKU": "NEBULA-PC-LATAM",
+      "CodigoLicencia": "PROD-KEY-001",
+      "PortadaURL": "https://res.cloudinary.com/..."
+    }
+  ]
+}
+```
+
+---
+
+### 4.5. Listar Mis Solicitudes de Devolución (Cliente)
+- **Endpoint**: `GET /info/mis-devoluciones` (Requiere autenticación)
+- **Uso Frontend**: Poblar la vista "Mis Solicitudes de Devolución" del usuario para ver el estado actual de sus reclamos (`SOLICITADA`, `APROBADA`, `RECHAZADA`, `REEMBOLSADA`).
+- **Respuesta (`200 OK`)**:
+```json
+[
+  {
+    "DevolucionID": 5,
+    "PedidoItemID": 20,
+    "FechaSolicitud": "2026-09-22T18:00:00",
+    "Motivo": "El código de producto no era válido para mi región.",
+    "Estado": "SOLICITADA",
+    "FechaResolucion": null,
+    "NotasAdministrador": null,
+    "VideojuegoTitulo": "Nebula Horizon",
+    "TipoItem": "VENTA",
+    "PrecioAplicado": 60.0
+  }
+]
+```
+
+---
+
+### 4.6. Listar Solicitudes de Devolución Generales (Empleado / Soporte)
+- **Endpoint**: `GET /info/devoluciones`
+- **Uso Frontend**: Cargar la tabla principal en el panel de administración/empleado para visualizar todas las solicitudes de devolución recibidas de clientes.
+- **Respuesta (`200 OK`)**:
+```json
+[
+  {
+    "ID": 5,
+    "PedidoItemID": 20,
+    "UsuarioID": 5,
+    "EmpleadoID": null,
+    "FechaSolicitud": "2026-09-22T18:00:00",
+    "Motivo": "El código de producto no era válido para mi región.",
+    "Estado": "SOLICITADA",
+    "FechaResolucion": null,
+    "NotasAdministrador": null
+  }
+]
+```
+
+---
+
 ## 5. Capa de Inventario (`/inv`)
 
 ### 5.1. Listar Catálogo Completo de Videojuegos
 - **Endpoint**: `GET /inv/videojuegos`
-- Retorna el listado masivo para tarjetas de productos en la tienda.
+- Retorna el listado masivo para tarjetas de productos en la tienda principal.
 
 ---
 
@@ -233,7 +373,7 @@ export default defineConfig({
 
 ---
 
-### 5.3. Crear Videojuego
+### 5.3. Crear Videojuego (Empleado / Admin)
 - **Endpoint**: `POST /inv/crear-videojuego`
 - **Formato**: `FormData` (`multipart/form-data`)
 - **Campos a enviar desde React**:
@@ -255,7 +395,7 @@ export default defineConfig({
 
 ## 6. Capa Financiera (`/financiero`)
 
-### 6.1. Crear Descuento
+### 6.1. Crear Descuento (Empleado / Admin)
 - **Endpoint**: `POST /financiero/crear-descuento`
 - *Nota UI*: Poner un control de radio botones o selector con las opciones `"PORCENTAJE"` o `"MONTO_FIJO"`.
 - **Request Body**:
@@ -270,7 +410,7 @@ export default defineConfig({
 
 ---
 
-### 6.2. Crear Cupón Promocional
+### 6.2. Crear Cupón Promocional (Empleado / Admin)
 - **Endpoint**: `POST /financiero/crear-cupon`
 - *Nota UI*: Poner radio botones para la opción `Tipo` (`"PORCENTAJE"` o `"MONTO_FIJO"`).
 - **Request Body**:
@@ -285,7 +425,7 @@ export default defineConfig({
 
 ---
 
-### 6.3. Asignar Descuento a un Videojuego
+### 6.3. Asignar Descuento a un Videojuego (Empleado / Admin)
 - **Endpoint**: `POST /financiero/asignar-descuento`
 - *Nota UI*: Renderizar un Listbox de videojuegos y un Listbox con descuentos cargado desde `GET /info/descuentos`.
 - **Request Body**:
@@ -293,6 +433,32 @@ export default defineConfig({
 {
   "VideojuegoID": 18,
   "DescuentoID": 3
+}
+```
+
+---
+
+### 6.4. Crear Tarifa - Precios de Venta y Renta (Empleado / Admin)
+- **Endpoint**: `POST /financiero/crear-tarifa`
+- **Uso**: Registra los precios de venta y/o renta para ser asociados posteriormente a videojuegos.
+- **Reglas de Validación**: Debe ingresarse al menos `PrecioVenta` o `PrecioRenta`. Si incluye `PrecioRenta`, se debe especificar la `DuracionRentaHoras` (> 0).
+- **Request Body**:
+```json
+{
+  "PrecioVenta": 59.99,
+  "PrecioRenta": 9.99,
+  "DuracionRentaHoras": 48
+}
+```
+- **Respuesta (`201 Created`)**:
+```json
+{
+  "status": "success",
+  "mensaje": "Tarifa 5 creada exitosamente.",
+  "TarifaID": 5,
+  "PrecioVenta": 59.99,
+  "PrecioRenta": 9.99,
+  "DuracionRentaHoras": 48
 }
 ```
 
@@ -383,5 +549,73 @@ export default defineConfig({
 {
   "Accion": "COMPLETAR",
   "PedidoID": 14
+}
+```
+
+---
+
+## 8. Capa de Gestión (`/gestion`)
+
+### 8.1. Solicitar Devolución (Cliente)
+- **Endpoint**: `POST /gestion/solicitar-devolucion` (Requiere autenticación)
+- **Uso**: Registra una solicitud de reembolso para un ítem comprado/rentado.
+- **Request Body**:
+```json
+{
+  "PedidoItemID": 20,
+  "Motivo": "El código de producto no era válido para mi región."
+}
+```
+- **Respuesta (`201 Created`)**:
+```json
+{
+  "status": "success",
+  "mensaje": "Solicitud de devolución 5 creada exitosamente.",
+  "DevolucionID": 5,
+  "PedidoItemID": 20,
+  "Estado": "SOLICITADA"
+}
+```
+
+---
+
+### 8.2. Actualizar Estado de Devolución (Empleado / Soporte)
+- **Endpoint**: `POST /gestion/actualizar-estado-devolucion`
+- **Uso**: Permite a un empleado cambiar el estado de la devolución a `"APROBADA"`, `"RECHAZADA"` o `"REEMBOLSADA"`.
+
+> [!NOTE]
+> **Reglas de UI para Frontend**:
+> 1. En la tarjeta/pantalla de gestión del empleado, colocar botones de acción para cambiar el estado.
+> 2. El botón **"Reembolsar"** (`"REEMBOLSADA"`) **solo debe habilitarse cuando el estado actual de la devolución sea `"APROBADA"`**.
+> 3. Una vez que el estado cambia a `"REEMBOLSADA"` o `"RECHAZADA"`, la devolución se encuentra en su estado final y **todos los botones de acción deben quedar deshabilitados/bloqueados**.
+
+- **Request Body (Aprobar Devolución)**:
+```json
+{
+  "DevolucionID": 5,
+  "EmpleadoID": 2,
+  "EstadoNuevo": "APROBADA",
+  "NotasAdministrador": "Aprobado tras revisar la orden."
+}
+```
+
+- **Request Body (Procesar Reembolso)**:
+```json
+{
+  "DevolucionID": 5,
+  "EmpleadoID": 2,
+  "EstadoNuevo": "REEMBOLSADA",
+  "NotasAdministrador": "Reembolso procesado en el banco."
+}
+```
+
+- **Respuesta (`200 OK`)**:
+```json
+{
+  "status": "success",
+  "mensaje": "Devolución 5 actualizada a estado 'REEMBOLSADA'.",
+  "DevolucionID": 5,
+  "EstadoNuevo": "REEMBOLSADA",
+  "NotasAdministrador": "Reembolso procesado en el banco."
 }
 ```

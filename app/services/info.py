@@ -142,3 +142,172 @@ def obtener_pedido_actual_items(db: Session, usuario_id: int):
         "Total": float(pedido_row.get("Total") or 0.0),
         "Items": items
     }
+
+
+def obtener_mis_pedidos(db: Session, usuario_id: int):
+    """
+    Obtiene la lista de todos los pedidos realizados por el usuario autenticado con su estado y factura si aplica.
+    """
+    from sqlalchemy import text
+
+    rows = db.execute(
+        text(
+            """
+            SELECT 
+                p.ID AS PedidoID,
+                p.Estado,
+                CAST(p.Subtotal AS FLOAT) AS Subtotal,
+                CAST(p.DescuentoTotal AS FLOAT) AS DescuentoTotal,
+                CAST(p.Impuestos AS FLOAT) AS Impuestos,
+                CAST(p.Total AS FLOAT) AS Total,
+                p.FechaCreacion,
+                (
+                    SELECT TOP 1 f.PDFUrl
+                    FROM dbo.Transaccion t
+                    INNER JOIN dbo.Factura f ON f.TransaccionID = t.ID
+                    WHERE t.PedidoID = p.ID
+                    ORDER BY f.FechaEmision DESC
+                ) AS FacturaURL,
+                (
+                    SELECT TOP 1 f.NumeroFactura
+                    FROM dbo.Transaccion t
+                    INNER JOIN dbo.Factura f ON f.TransaccionID = t.ID
+                    WHERE t.PedidoID = p.ID
+                    ORDER BY f.FechaEmision DESC
+                ) AS NumeroFactura
+            FROM dbo.Pedido p
+            WHERE p.UsuarioID = :usuario_id
+            ORDER BY p.FechaCreacion DESC
+            """
+        ),
+        {"usuario_id": usuario_id},
+    ).mappings().all()
+
+    return [dict(r) for r in rows]
+
+
+def obtener_detalle_pedido(db: Session, usuario_id: int, pedido_id: int):
+    """
+    Obtiene el detalle completo de un pedido específico por ID (encabezado, factura e ítems),
+    validando que pertenezca al usuario autenticado.
+    """
+    from sqlalchemy import text
+    from fastapi import HTTPException, status
+
+    pedido_row = db.execute(
+        text(
+            """
+            SELECT 
+                p.ID AS PedidoID,
+                p.Estado,
+                CAST(p.Subtotal AS FLOAT) AS Subtotal,
+                CAST(p.DescuentoTotal AS FLOAT) AS DescuentoTotal,
+                CAST(p.Impuestos AS FLOAT) AS Impuestos,
+                CAST(p.Total AS FLOAT) AS Total,
+                p.FechaCreacion,
+                (
+                    SELECT TOP 1 f.PDFUrl
+                    FROM dbo.Transaccion t
+                    INNER JOIN dbo.Factura f ON f.TransaccionID = t.ID
+                    WHERE t.PedidoID = p.ID
+                    ORDER BY f.FechaEmision DESC
+                ) AS FacturaURL,
+                (
+                    SELECT TOP 1 f.NumeroFactura
+                    FROM dbo.Transaccion t
+                    INNER JOIN dbo.Factura f ON f.TransaccionID = t.ID
+                    WHERE t.PedidoID = p.ID
+                    ORDER BY f.FechaEmision DESC
+                ) AS NumeroFactura
+            FROM dbo.Pedido p
+            WHERE p.ID = :pedido_id AND p.UsuarioID = :usuario_id
+            """
+        ),
+        {"pedido_id": pedido_id, "usuario_id": usuario_id},
+    ).mappings().first()
+
+    if not pedido_row:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No se encontró el pedido con ID {pedido_id}.",
+        )
+
+    items_rows = db.execute(
+        text(
+            """
+            SELECT 
+                pi.ID AS PedidoItemID,
+                pi.PedidoID,
+                pi.ProductoID,
+                pi.TipoItem,
+                CAST(pi.PrecioAplicado AS FLOAT) AS PrecioAplicado,
+                CAST(pi.DescuentoAplicado AS FLOAT) AS DescuentoAplicado,
+                CAST((pi.PrecioAplicado - pi.DescuentoAplicado) AS FLOAT) AS Subtotal,
+                v.ID AS VideojuegoID,
+                v.Titulo AS VideojuegoTitulo,
+                pr.SKU,
+                pr.Codigo_Licencia AS CodigoLicencia,
+                (
+                    SELECT TOP 1 URL 
+                    FROM dbo.Portada 
+                    WHERE VideojuegoID = v.ID 
+                    ORDER BY ID ASC
+                ) AS PortadaURL
+            FROM dbo.PedidoItem pi
+            INNER JOIN dbo.Producto pr ON pr.ProductoID = pi.ProductoID
+            INNER JOIN dbo.Videojuego v ON v.ID = pr.VideojuegoID
+            WHERE pi.PedidoID = :pedido_id
+            ORDER BY pi.ID ASC
+            """
+        ),
+        {"pedido_id": pedido_id},
+    ).mappings().all()
+
+    items = [dict(row) for row in items_rows]
+
+    return {
+        "PedidoID": int(pedido_row["PedidoID"]),
+        "Estado": pedido_row["Estado"],
+        "Subtotal": float(pedido_row["Subtotal"] or 0.0),
+        "DescuentoTotal": float(pedido_row["DescuentoTotal"] or 0.0),
+        "Impuestos": float(pedido_row["Impuestos"] or 0.0),
+        "Total": float(pedido_row["Total"] or 0.0),
+        "FechaCreacion": pedido_row["FechaCreacion"],
+        "NumeroFactura": pedido_row.get("NumeroFactura"),
+        "FacturaURL": pedido_row.get("FacturaURL"),
+        "Items": items,
+    }
+
+
+def obtener_mis_devoluciones(db: Session, usuario_id: int):
+    """
+    Obtiene el historial de solicitudes de devolución del usuario autenticado.
+    """
+    from sqlalchemy import text
+
+    rows = db.execute(
+        text(
+            """
+            SELECT 
+                d.ID AS DevolucionID,
+                d.PedidoItemID,
+                d.FechaSolicitud,
+                d.Motivo,
+                d.Estado,
+                d.FechaResolucion,
+                d.NotasAdministrador,
+                v.Titulo AS VideojuegoTitulo,
+                pi.TipoItem,
+                CAST(pi.PrecioAplicado AS FLOAT) AS PrecioAplicado
+            FROM dbo.Devolucion d
+            INNER JOIN dbo.PedidoItem pi ON pi.ID = d.PedidoItemID
+            INNER JOIN dbo.Producto pr ON pr.ProductoID = pi.ProductoID
+            INNER JOIN dbo.Videojuego v ON v.ID = pr.VideojuegoID
+            WHERE d.UsuarioID = :usuario_id
+            ORDER BY d.FechaSolicitud DESC
+            """
+        ),
+        {"usuario_id": usuario_id},
+    ).mappings().all()
+
+    return [dict(r) for r in rows]

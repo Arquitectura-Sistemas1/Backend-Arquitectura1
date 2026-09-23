@@ -85,3 +85,41 @@ class PedidoActualRes(BaseModel):
     DescuentoTotal: float = 0.0
     Total: float = 0.0
     Items: list[PedidoItemRes] = []
+
+
+class PedidoResumenRes(BaseModel):
+    PedidoID: int
+    Estado: str
+    Subtotal: float
+    DescuentoTotal: float
+    Impuestos: float
+    Total: float
+    FechaCreacion: datetime
+    NumeroFactura: Optional[str] = None
+    FacturaURL: Optional[str] = None
+
+
+class DetallePedidoRes(BaseModel):
+    PedidoID: int
+    Estado: str
+    Subtotal: float
+    DescuentoTotal: float
+    Impuestos: float
+    Total: float
+    FechaCreacion: datetime
+    NumeroFactura: Optional[str] = None
+    FacturaURL: Optional[str] = None
+    Items: list[PedidoItemRes] = []
+
+
+class MiDevolucionRes(BaseModel):
+    DevolucionID: int
+    PedidoItemID: int
+    FechaSolicitud: datetime
+    Motivo: str
+    Estado: str
+    FechaResolucion: Optional[datetime] = None
+    NotasAdministrador: Optional[str] = None
+    VideojuegoTitulo: str
+    TipoItem: str
+    PrecioAplicado: float

@@ -10,11 +10,14 @@ from app.schemas.financiero import (
     CrearDescuentoRes,
     CrearCuponReq,
     CrearCuponRes,
+    CrearTarifaReq,
+    CrearTarifaRes,
 )
 from app.services.financiero import (
     asignar_descuento,
     crear_descuento,
     crear_cupon,
+    crear_tarifa,
 )
 
 router = APIRouter(prefix="/financiero", tags=["Financiero"])
@@ -60,3 +63,18 @@ def crear_cupon_endpoint(
 ):
     """Crea un nuevo cupón promocional en la base de datos."""
     return crear_cupon(db, datos)
+
+
+@router.post(
+    "/crear-tarifa",
+    status_code=status.HTTP_201_CREATED,
+    response_model=CrearTarifaRes,
+)
+def crear_tarifa_endpoint(
+    datos: CrearTarifaReq,
+    db: Session = Depends(get_db),
+    usuario_actual: str = Depends(obtener_usuario_actual),
+):
+    """Crea una nueva tarifa (precios de venta/renta) en la base de datos."""
+    return crear_tarifa(db, datos)
+
