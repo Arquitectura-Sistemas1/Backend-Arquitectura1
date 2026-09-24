@@ -288,3 +288,60 @@ def verificar_y_completar_registro(datos: ConfirmaRegistroReq, db: Session):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error BD al verificar el registro: {str(e.__dict__.get('orig', e))}"
         )
+
+
+
+def obtener_todos_los_usuarios(db: Session):
+    try:
+        sql = text("""
+            SELECT 
+                u.ID AS id,
+                u.Nombres AS nombres,
+                u.Apellidos AS apellidos,
+                u.FechaNacimiento AS fecha_nacimiento,
+                u.Telefono AS telefono,
+                u.Correo AS correo,
+                u.PaisID AS pais_id,
+                p.Nombre AS pais,
+                cu.Usuario AS usuario
+            FROM dbo.Usuario u
+            INNER JOIN dbo.Pais p ON p.ID = u.PaisID
+            LEFT JOIN dbo.CredencialUsuario cu ON cu.UsuarioID = u.ID
+            ORDER BY u.ID ASC
+        """)
+        resultado = db.execute(sql).mappings().all()
+        return [dict(row) for row in resultado]
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error BD al obtener usuarios: {str(e.__dict__.get('orig', e))}"
+        )
+
+
+def obtener_todos_los_empleados(db: Session):
+    try:
+        sql = text("""
+            SELECT 
+                e.ID AS id,
+                e.RolID AS rol_id,
+                r.Nombre AS rol,
+                e.CodigoEmpleado AS codigo_empleado,
+                e.Nombres AS nombres,
+                e.Apellidos AS apellidos,
+                e.CUI AS cui,
+                e.Telefono AS telefono,
+                e.Correo AS correo,
+                ce.Usuario AS usuario
+            FROM dbo.Empleado e
+            INNER JOIN dbo.Rol r ON r.ID = e.RolID
+            LEFT JOIN dbo.CredencialEmpleado ce ON ce.EmpleadoID = e.ID
+            ORDER BY e.ID ASC
+        """)
+        resultado = db.execute(sql).mappings().all()
+        return [dict(row) for row in resultado]
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error BD al obtener empleados: {str(e.__dict__.get('orig', e))}"
+        )
+

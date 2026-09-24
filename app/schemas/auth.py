@@ -67,3 +67,30 @@ class RegistrarEmpleadoData(BaseModel):
 class RegistrarEmpleadoRes(BaseModel):
     message: str = "Empleado registrado exitosamente."
     data: RegistrarEmpleadoData
+
+
+
+class UsuarioRes(BaseModel):
+    id: int
+    nombres: str
+    apellidos: str
+    fecha_nacimiento: date
+    telefono: str | None = None
+    correo: str
+    pais_id: int
+    pais: str | None = None
+    usuario: str | None = None
+
+
+class EmpleadoRes(BaseModel):
+    id: int
+    rol_id: int
+    rol: str | None = None
+    codigo_empleado: str
+    nombres: str
+    apellidos: str
+    cui: str
+    telefono: str | None = None
+    correo: str
+    usuario: str | None = None
+

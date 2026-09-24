@@ -2,12 +2,16 @@
 from fastapi import APIRouter, Depends, status, Request, Response  # <-- 1. Importa Request
 from app.core.database import Session
 from app.api.deps import get_db
-from app.services.auth import login_usuario, solicitud_usuario, verificar_y_completar_registro, registrar_empleado
+from app.services.auth import (
+    login_usuario, solicitud_usuario, verificar_y_completar_registro, registrar_empleado,
+    obtener_todos_los_usuarios, obtener_todos_los_empleados
+)
 from app.core.limiter import limiter
 from app.core.security import ACCESS_TOKEN_EXPIRE_MINUTES, obtener_empleado_admin_actual, obtener_payload_actual, obtener_usuario_actual
 from app.schemas.auth import (
     LoginRes, LoginReq, SolicitudUsuarioReq, SolicitudUsuarioRes, ConfirmaRegistroReq,
-    ConfirmaRegistroRes, RegistrarEmpleadoReq, RegistrarEmpleadoRes
+    ConfirmaRegistroRes, RegistrarEmpleadoReq, RegistrarEmpleadoRes,
+    UsuarioRes, EmpleadoRes
 )
 router = APIRouter(prefix="/auth", tags=["Auth"])
 from fastapi.responses import RedirectResponse
@@ -99,3 +103,16 @@ def obtener_usuario_actual_redirect(request: Request):
         return RedirectResponse(url=f"{frontend_base}")
     except Exception:
         return RedirectResponse(url=f"{frontend_base}/login")
+
+
+@router.get("/usuarios", status_code=status.HTTP_200_OK, response_model=list[UsuarioRes])
+def obtener_usuarios_endpoint(db: Session = Depends(get_db)):
+    """Obtiene la lista de todos los usuarios registrados."""
+    return obtener_todos_los_usuarios(db)
+
+
+@router.get("/empleados", status_code=status.HTTP_200_OK, response_model=list[EmpleadoRes])
+def obtener_empleados_endpoint(db: Session = Depends(get_db)):
+    """Obtiene la lista de todos los empleados registrados."""
+    return obtener_todos_los_empleados(db)
+
