@@ -29,7 +29,7 @@ def generar_imagen_factura(datos_factura: dict[str, Any]) -> bytes:
 
     y = 95
     # Info de Factura y Referencia
-    draw.text((25, y), f"Número de Factura: {datos_factura.get('numero_factura', '')}", fill=(15, 23, 42), font=font_bold)
+    draw.text((25, y), f"Numero de Factura: {datos_factura.get('numero_factura', '')}", fill=(15, 23, 42), font=font_bold)
     y += 24
     draw.text((25, y), f"Referencia Pago: {datos_factura.get('referencia_externa', '')}", fill=(51, 65, 85), font=font_regular)
     y += 22
@@ -39,7 +39,7 @@ def generar_imagen_factura(datos_factura: dict[str, Any]) -> bytes:
     # Cuadro Datos Cliente
     draw.rectangle([(25, y), (width - 25, y + 65)], fill=(248, 250, 252), outline=(226, 232, 240), width=1)
     draw.text((40, y + 12), f"Cliente: {datos_factura.get('nombre_cliente', '')}", fill=(15, 23, 42), font=font_bold)
-    draw.text((40, y + 36), f"NIT / Cédula: {datos_factura.get('nit_cliente', '')}", fill=(51, 65, 85), font=font_regular)
+    draw.text((40, y + 36), f"NIT / Cedula: {datos_factura.get('nit_cliente', '')}", fill=(51, 65, 85), font=font_regular)
     y += 85
 
     # Título Tabla
@@ -89,9 +89,9 @@ def generar_imagen_factura(datos_factura: dict[str, Any]) -> bytes:
     if cupon_codigo:
         simbolo = "%" if str(cupon_tipo).upper() == "PORCENTAJE" else "$"
         valor_str = f"{float(cupon_valor):.0f}" if float(cupon_valor or 0).is_integer() else f"{float(cupon_valor):.2f}"
-        linea_desc = f"Cupón [{cupon_codigo}] ({valor_str}{simbolo}): -${descuento_total:.2f}"
+        linea_desc = f"Cupon [{cupon_codigo}] ({valor_str}{simbolo}): -${descuento_total:.2f}"
     else:
-        linea_desc = f"Descuento Cupón: -${descuento_total:.2f}"
+        linea_desc = f"Descuento Cupon: -${descuento_total:.2f}"
 
     draw.text((380, y), linea_desc, fill=(71, 85, 105), font=font_regular)
     y += 32
