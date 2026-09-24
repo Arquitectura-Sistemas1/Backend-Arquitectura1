@@ -143,7 +143,6 @@ def obtener_pedido_actual_items(db: Session, usuario_id: int):
         "Items": items
     }
 
-
 def obtener_mis_pedidos(db: Session, usuario_id: int):
     """
     Obtiene la lista de todos los pedidos realizados por el usuario autenticado con su estado y factura si aplica.
@@ -166,14 +165,14 @@ def obtener_mis_pedidos(db: Session, usuario_id: int):
                     FROM dbo.Transaccion t
                     INNER JOIN dbo.Factura f ON f.TransaccionID = t.ID
                     WHERE t.PedidoID = p.ID
-                    ORDER BY f.FechaEmision DESC
+                    ORDER BY f.Fecha DESC
                 ) AS FacturaURL,
                 (
                     SELECT TOP 1 f.NumeroFactura
                     FROM dbo.Transaccion t
                     INNER JOIN dbo.Factura f ON f.TransaccionID = t.ID
                     WHERE t.PedidoID = p.ID
-                    ORDER BY f.FechaEmision DESC
+                    ORDER BY f.Fecha DESC
                 ) AS NumeroFactura
             FROM dbo.Pedido p
             WHERE p.UsuarioID = :usuario_id
@@ -193,7 +192,6 @@ def obtener_detalle_pedido(db: Session, usuario_id: int, pedido_id: int):
     """
     from sqlalchemy import text
     from fastapi import HTTPException, status
-
     pedido_row = db.execute(
         text(
             """
@@ -210,14 +208,14 @@ def obtener_detalle_pedido(db: Session, usuario_id: int, pedido_id: int):
                     FROM dbo.Transaccion t
                     INNER JOIN dbo.Factura f ON f.TransaccionID = t.ID
                     WHERE t.PedidoID = p.ID
-                    ORDER BY f.FechaEmision DESC
+                    ORDER BY f.Fecha DESC
                 ) AS FacturaURL,
                 (
                     SELECT TOP 1 f.NumeroFactura
                     FROM dbo.Transaccion t
                     INNER JOIN dbo.Factura f ON f.TransaccionID = t.ID
                     WHERE t.PedidoID = p.ID
-                    ORDER BY f.FechaEmision DESC
+                    ORDER BY f.Fecha DESC
                 ) AS NumeroFactura
             FROM dbo.Pedido p
             WHERE p.ID = :pedido_id AND p.UsuarioID = :usuario_id
@@ -225,7 +223,6 @@ def obtener_detalle_pedido(db: Session, usuario_id: int, pedido_id: int):
         ),
         {"pedido_id": pedido_id, "usuario_id": usuario_id},
     ).mappings().first()
-
     if not pedido_row:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
